@@ -1,6 +1,8 @@
 import type { Message, ToolCall } from "@loyaltyos/ai";
 import { useCallback, useRef, useState } from "react";
 
+import i18n from "../../i18n";
+
 const API_URL: string = (import.meta.env.VITE_API_URL as string | undefined) ?? "/api/v1";
 const AI_PROXY_URL = `${API_URL}/admin/ai/chat`;
 
@@ -30,14 +32,14 @@ async function* streamFromProxy(
 
   const response = await fetch(AI_PROXY_URL, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", "Accept-Language": i18n.language },
     body: JSON.stringify(body),
     credentials: "include",
     signal,
   });
 
   if (!response.ok) {
-    let errorMsg = `Error del servidor (${String(response.status)})`;
+    let errorMsg = i18n.t("aiUi.serverError", { status: response.status });
     try {
       const errBody = (await response.json()) as { error?: { message: string } };
       if (errBody.error?.message) errorMsg = errBody.error.message;
@@ -50,7 +52,7 @@ async function* streamFromProxy(
 
   const reader = response.body?.getReader();
   if (!reader) {
-    yield { type: "error", error: "No response body" };
+    yield { type: "error", error: i18n.t("aiUi.noResponse") };
     return;
   }
 
@@ -132,7 +134,7 @@ export function useAIChat() {
               break;
 
             case "error":
-              assistantContent += `\n\n❌ ${chunk.error ?? "Error desconocido"}`;
+              assistantContent += `\n\n❌ ${chunk.error ?? i18n.t("errors.REQUEST_ERROR")}`;
               setMessages([...updatedMessages, { role: "assistant", content: assistantContent }]);
               break;
           }
@@ -187,7 +189,7 @@ export function useAIChat() {
           continuedContent += chunk.content ?? "";
           setMessages([...baseMessages, { role: "assistant", content: continuedContent }]);
         } else if (chunk.type === "error") {
-          continuedContent += `\n\n❌ ${chunk.error ?? "Error desconocido"}`;
+          continuedContent += `\n\n❌ ${chunk.error ?? i18n.t("errors.REQUEST_ERROR")}`;
           setMessages([...baseMessages, { role: "assistant", content: continuedContent }]);
         }
       }
@@ -211,7 +213,7 @@ export function useAIChat() {
 
   const cancelAction = useCallback(() => {
     setPendingConfirmation(null);
-    setMessages((prev) => [...prev, { role: "assistant", content: "Operación cancelada." }]);
+    setMessages((prev) => [...prev, { role: "assistant", content: i18n.t("aiUi.cancelled") }]);
   }, []);
 
   const clearHistory = useCallback(() => {
