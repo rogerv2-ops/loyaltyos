@@ -1,0 +1,22 @@
+name: ARM64 build check
+
+on:
+  push:
+    branches:
+      - arm-build-check
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04-arm
+    strategy:
+      fail-fast: false
+      matrix:
+        component:
+          - api
+          - admin
+          - portal
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build component for ARM64 without pushing
+        run: docker build --platform linux/arm64 --file apps/${{ matrix.component }}/Dockerfile --tag loyaltyos-arm-check-${{ matrix.component }} .
