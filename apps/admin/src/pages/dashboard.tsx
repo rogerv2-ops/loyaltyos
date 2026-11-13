@@ -5,6 +5,7 @@ import { Bar, BarChart, CartesianGrid, ResponsiveContainer, XAxis, YAxis } from 
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import uiLocale from "@/i18n";
 import { fetchApi } from "@/lib/api-client";
 import type { DashboardStats, GiftCardMetrics } from "@/types";
 
@@ -85,7 +86,9 @@ export function DashboardPage(): JSX.Element {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold">{data.activeMembers.toLocaleString()}</p>
+            <p className="text-2xl font-bold">
+              {data.activeMembers.toLocaleString(uiLocale.language)}
+            </p>
           </CardContent>
         </Card>
 
@@ -98,7 +101,7 @@ export function DashboardPage(): JSX.Element {
           </CardHeader>
           <CardContent>
             <p className="text-2xl font-bold text-green-600">
-              {data.totalPointsIssued.toLocaleString()}
+              {data.totalPointsIssued.toLocaleString(uiLocale.language)}
             </p>
           </CardContent>
         </Card>
@@ -112,7 +115,7 @@ export function DashboardPage(): JSX.Element {
           </CardHeader>
           <CardContent>
             <p className="text-2xl font-bold text-orange-600">
-              {data.totalPointsRedeemed.toLocaleString()}
+              {data.totalPointsRedeemed.toLocaleString(uiLocale.language)}
             </p>
           </CardContent>
         </Card>
@@ -139,7 +142,7 @@ export function DashboardPage(): JSX.Element {
           <CardContent>
             <p className="text-2xl font-bold">
               {gcMetrics
-                ? `${gcMetrics.active.toLocaleString()} ${t("giftcards.cards").toLowerCase()}`
+                ? `${gcMetrics.active.toLocaleString(uiLocale.language)} ${t("giftcards.cards").toLowerCase()}`
                 : "—"}
             </p>
           </CardContent>
