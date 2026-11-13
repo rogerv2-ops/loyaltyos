@@ -27,6 +27,8 @@ import { usePermission } from "@/lib/access";
 import { fetchApi } from "@/lib/api-client";
 import type { PaginatedResponse } from "@/types";
 
+import { useUiText } from "../lib/ui-text";
+
 interface BadgeType {
   id: string;
   name: string;
@@ -38,6 +40,8 @@ interface BadgeType {
 }
 
 export function BadgesListPage(): JSX.Element {
+  const uiText = useUiText();
+
   const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -63,13 +67,13 @@ export function BadgesListPage(): JSX.Element {
 
   const typeLabel = (type: string): string => {
     const labels: Record<string, string> = {
-      ACHIEVEMENT: "Achievement",
-      STATUS: "Status",
-      TEMPORAL: "Temporal",
-      COLLECTIBLE: "Collectible",
-      SOCIAL: "Social",
+      ACHIEVEMENT: "interface.achievement",
+      STATUS: "common.status",
+      TEMPORAL: "interface.temporal",
+      COLLECTIBLE: "interface.collectible",
+      SOCIAL: "interface.social",
     };
-    return labels[type] ?? type;
+    return uiText(labels[type] ?? type);
   };
 
   return (
@@ -90,17 +94,17 @@ export function BadgesListPage(): JSX.Element {
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>All Badges</CardTitle>
+          <CardTitle>{uiText("interface.allBadges")}</CardTitle>
           <Select value={typeFilter} onValueChange={setTypeFilter}>
             <SelectTrigger className="w-40">
-              <SelectValue placeholder="Type" />
+              <SelectValue placeholder={uiText("interface.type")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Types</SelectItem>
-              <SelectItem value="ACHIEVEMENT">Achievement</SelectItem>
-              <SelectItem value="STATUS">Status</SelectItem>
+              <SelectItem value="all">{uiText("interface.allTypes")}</SelectItem>
+              <SelectItem value="ACHIEVEMENT">{uiText("interface.achievement")}</SelectItem>
+              <SelectItem value="STATUS">{uiText("common.status")}</SelectItem>
               <SelectItem value="TEMPORAL">Temporal</SelectItem>
-              <SelectItem value="COLLECTIBLE">Collectible</SelectItem>
+              <SelectItem value="COLLECTIBLE">{uiText("interface.collectible")}</SelectItem>
               <SelectItem value="SOCIAL">Social</SelectItem>
             </SelectContent>
           </Select>
@@ -113,13 +117,13 @@ export function BadgesListPage(): JSX.Element {
               ))}
             </div>
           ) : isError ? (
-            <p className="text-destructive">Failed to load badges.</p>
+            <p className="text-destructive">{uiText("interface.failedToLoadBadges")}</p>
           ) : (
             <>
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Badge</TableHead>
+                    <TableHead>{uiText("interface.badge")}</TableHead>
                     <TableHead>{t("campaigns.type")}</TableHead>
                     <TableHead>{t("common.status")}</TableHead>
                     <TableHead className="w-24" />
@@ -203,7 +207,8 @@ export function BadgesListPage(): JSX.Element {
                     {t("common.previous")}
                   </Button>
                   <span className="text-sm text-muted-foreground">
-                    Page {data.page} of {data.totalPages}
+                    {uiText("interface.page")} {data.page} {uiText("interface.of")}{" "}
+                    {data.totalPages}
                   </span>
                   <Button
                     variant="outline"
