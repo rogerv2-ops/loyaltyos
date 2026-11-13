@@ -4,6 +4,7 @@ import type { FastifyInstance } from "fastify";
 import { z } from "zod";
 
 import { prisma } from "../../db.js";
+import { apiCopy } from "../../lib/api-copy.js";
 
 const rewards = new RewardsService(prisma);
 
@@ -30,7 +31,9 @@ export function adminRewardsRoutes(app: FastifyInstance, _opts: unknown, done: (
     const { id } = z.object({ id: z.string() }).parse(request.params);
     const owned = await prisma.reward.findFirst({ where: { id, programId: request.programId } });
     if (!owned) {
-      return reply.status(404).send({ error: { code: "NOT_FOUND", message: "Reward not found" } });
+      return reply.status(404).send({
+        error: { code: "NOT_FOUND", message: apiCopy(request, "apiMessages.rewardNotFound") },
+      });
     }
     const reward = await rewards.getById(id);
     return reply.send({ data: reward });
@@ -42,7 +45,9 @@ export function adminRewardsRoutes(app: FastifyInstance, _opts: unknown, done: (
     const body = rewardUpdateSchema.parse(request.body);
     const owned = await prisma.reward.findFirst({ where: { id, programId: request.programId } });
     if (!owned) {
-      return reply.status(404).send({ error: { code: "NOT_FOUND", message: "Reward not found" } });
+      return reply.status(404).send({
+        error: { code: "NOT_FOUND", message: apiCopy(request, "apiMessages.rewardNotFound") },
+      });
     }
     const reward = await rewards.update(id, body);
     return reply.send({ data: reward });
@@ -53,7 +58,9 @@ export function adminRewardsRoutes(app: FastifyInstance, _opts: unknown, done: (
     const { id } = z.object({ id: z.string() }).parse(request.params);
     const owned = await prisma.reward.findFirst({ where: { id, programId: request.programId } });
     if (!owned) {
-      return reply.status(404).send({ error: { code: "NOT_FOUND", message: "Reward not found" } });
+      return reply.status(404).send({
+        error: { code: "NOT_FOUND", message: apiCopy(request, "apiMessages.rewardNotFound") },
+      });
     }
     await rewards.softDelete(id);
     return reply.status(204).send();
@@ -64,7 +71,9 @@ export function adminRewardsRoutes(app: FastifyInstance, _opts: unknown, done: (
     const { id } = z.object({ id: z.string() }).parse(request.params);
     const owned = await prisma.reward.findFirst({ where: { id, programId: request.programId } });
     if (!owned) {
-      return reply.status(404).send({ error: { code: "NOT_FOUND", message: "Reward not found" } });
+      return reply.status(404).send({
+        error: { code: "NOT_FOUND", message: apiCopy(request, "apiMessages.rewardNotFound") },
+      });
     }
     await rewards.archive(id);
     return reply.status(204).send();
@@ -75,7 +84,9 @@ export function adminRewardsRoutes(app: FastifyInstance, _opts: unknown, done: (
     const { id } = z.object({ id: z.string() }).parse(request.params);
     const owned = await prisma.reward.findFirst({ where: { id, programId: request.programId } });
     if (!owned) {
-      return reply.status(404).send({ error: { code: "NOT_FOUND", message: "Reward not found" } });
+      return reply.status(404).send({
+        error: { code: "NOT_FOUND", message: apiCopy(request, "apiMessages.rewardNotFound") },
+      });
     }
     const reward = await rewards.publish(id);
     return reply.send({ data: reward });
@@ -87,7 +98,9 @@ export function adminRewardsRoutes(app: FastifyInstance, _opts: unknown, done: (
     const { qty } = restockSchema.parse(request.body);
     const owned = await prisma.reward.findFirst({ where: { id, programId: request.programId } });
     if (!owned) {
-      return reply.status(404).send({ error: { code: "NOT_FOUND", message: "Reward not found" } });
+      return reply.status(404).send({
+        error: { code: "NOT_FOUND", message: apiCopy(request, "apiMessages.rewardNotFound") },
+      });
     }
     const reward = await rewards.restock(id, qty);
     return reply.send({ data: reward });

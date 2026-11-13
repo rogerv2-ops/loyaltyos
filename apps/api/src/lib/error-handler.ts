@@ -46,7 +46,7 @@ import {
   TermsTemplateNotFoundError,
 } from "@loyaltyos/giftcards";
 import type { SupportedLocale } from "@loyaltyos/i18n";
-import { resolveLocale } from "@loyaltyos/i18n";
+import { localizedValidation, resolveLocale } from "@loyaltyos/i18n";
 import enUS from "@loyaltyos/i18n/src/locales/en-US.json" with { type: "json" };
 import esMX from "@loyaltyos/i18n/src/locales/es-MX.json" with { type: "json" };
 import {
@@ -88,11 +88,13 @@ export function localizeMessage(code: string, locale: SupportedLocale): string {
       current === null ||
       !Object.prototype.hasOwnProperty.call(current, part)
     ) {
-      return code;
+      return (CATALOGS[locale].errors as Record<string, string>).REQUEST_ERROR ?? "Error";
     }
     current = (current as Record<string, unknown>)[part];
   }
-  return typeof current === "string" ? current : code;
+  return typeof current === "string"
+    ? current
+    : ((CATALOGS[locale].errors as Record<string, string>).REQUEST_ERROR ?? "Error");
 }
 
 function getLocale(req: FastifyRequest): SupportedLocale {
@@ -129,7 +131,10 @@ function mapError(
         error: {
           code: "VALIDATION_ERROR",
           message: localizeMessage("VALIDATION_ERROR", locale),
-          details: err.errors,
+          details: err.errors.map((issue) => ({
+            ...issue,
+            message: localizedValidation(issue, locale),
+          })),
         },
       },
     };

@@ -6,6 +6,7 @@ import type { FastifyInstance } from "fastify";
 import { z } from "zod";
 
 import { prisma } from "../../db.js";
+import { apiCopy } from "../../lib/api-copy.js";
 import { audit } from "../../lib/audit.js";
 import { giftCardService } from "../../lib/giftcard-setup.js";
 
@@ -63,7 +64,7 @@ const transactionsBodySchema = z
     type: z.enum(["activate", "redeem", "refund", "cancel", "expire"]).optional(),
   })
   .refine((d) => d.code !== undefined || d.cardId !== undefined, {
-    message: "Either code or cardId is required",
+    message: "apiMessages.codeOrCardRequired",
   });
 
 const adminRedeemBodySchema = z.object({
@@ -346,7 +347,10 @@ export function adminGiftCardsRoutes(app: FastifyInstance, _opts: unknown, done:
     const idempotencyKey = request.headers["idempotency-key"] as string | undefined;
     if (!idempotencyKey) {
       return reply.status(400).send({
-        error: { code: "MISSING_IDEMPOTENCY_KEY", message: "Idempotency-Key header is required" },
+        error: {
+          code: "MISSING_IDEMPOTENCY_KEY",
+          message: apiCopy(request, "apiMessages.idempotencyRequired"),
+        },
       });
     }
 
@@ -355,7 +359,10 @@ export function adminGiftCardsRoutes(app: FastifyInstance, _opts: unknown, done:
     const redis = getRedisConnection();
     if (!redis) {
       return reply.status(500).send({
-        error: { code: "INTERNAL_ERROR", message: "Redis not available" },
+        error: {
+          code: "INTERNAL_ERROR",
+          message: apiCopy(request, "apiMessages.redisUnavailable"),
+        },
       });
     }
 
@@ -383,7 +390,10 @@ export function adminGiftCardsRoutes(app: FastifyInstance, _opts: unknown, done:
     const redis = getRedisConnection();
     if (!redis) {
       return reply.status(500).send({
-        error: { code: "INTERNAL_ERROR", message: "Redis not available" },
+        error: {
+          code: "INTERNAL_ERROR",
+          message: apiCopy(request, "apiMessages.redisUnavailable"),
+        },
       });
     }
 
@@ -411,7 +421,10 @@ export function adminGiftCardsRoutes(app: FastifyInstance, _opts: unknown, done:
       });
       if (!card) {
         return reply.status(404).send({
-          error: { code: "GIFT_CARD_NOT_FOUND", message: "Gift card not found" },
+          error: {
+            code: "GIFT_CARD_NOT_FOUND",
+            message: apiCopy(request, "apiMessages.giftCardNotFound"),
+          },
         });
       }
       cardId = card.id;
@@ -423,13 +436,19 @@ export function adminGiftCardsRoutes(app: FastifyInstance, _opts: unknown, done:
       });
       if (!card) {
         return reply.status(404).send({
-          error: { code: "GIFT_CARD_NOT_FOUND", message: "Gift card not found" },
+          error: {
+            code: "GIFT_CARD_NOT_FOUND",
+            message: apiCopy(request, "apiMessages.giftCardNotFound"),
+          },
         });
       }
       cardId = card.id;
     } else {
       return reply.status(400).send({
-        error: { code: "VALIDATION_ERROR", message: "Either code or cardId is required" },
+        error: {
+          code: "VALIDATION_ERROR",
+          message: apiCopy(request, "apiMessages.codeOrCardRequired"),
+        },
       });
     }
 
@@ -463,9 +482,12 @@ export function adminGiftCardsRoutes(app: FastifyInstance, _opts: unknown, done:
       where: { id, programId: request.programId },
     });
     if (!owned) {
-      return reply
-        .status(404)
-        .send({ error: { code: "NOT_FOUND", message: "Terms template not found" } });
+      return reply.status(404).send({
+        error: {
+          code: "NOT_FOUND",
+          message: apiCopy(request, "apiMessages.termsTemplateNotFound"),
+        },
+      });
     }
     const template = await giftCardService.getTermsTemplate(id);
     return reply.send({ data: template });
@@ -478,9 +500,12 @@ export function adminGiftCardsRoutes(app: FastifyInstance, _opts: unknown, done:
       where: { id, programId: request.programId },
     });
     if (!owned) {
-      return reply
-        .status(404)
-        .send({ error: { code: "NOT_FOUND", message: "Terms template not found" } });
+      return reply.status(404).send({
+        error: {
+          code: "NOT_FOUND",
+          message: apiCopy(request, "apiMessages.termsTemplateNotFound"),
+        },
+      });
     }
     const template = await giftCardService.updateTermsTemplate(id, body);
     return reply.send({ data: template });
@@ -492,9 +517,12 @@ export function adminGiftCardsRoutes(app: FastifyInstance, _opts: unknown, done:
       where: { id, programId: request.programId },
     });
     if (!owned) {
-      return reply
-        .status(404)
-        .send({ error: { code: "NOT_FOUND", message: "Terms template not found" } });
+      return reply.status(404).send({
+        error: {
+          code: "NOT_FOUND",
+          message: apiCopy(request, "apiMessages.termsTemplateNotFound"),
+        },
+      });
     }
     await giftCardService.deleteTermsTemplate(id);
     return reply.status(204).send();
@@ -523,7 +551,10 @@ export function adminGiftCardsRoutes(app: FastifyInstance, _opts: unknown, done:
     });
     if (!card) {
       return reply.status(404).send({
-        error: { code: "GIFT_CARD_NOT_FOUND", message: "Gift card not found" },
+        error: {
+          code: "GIFT_CARD_NOT_FOUND",
+          message: apiCopy(request, "apiMessages.giftCardNotFound"),
+        },
       });
     }
     return reply.send({ data: { ...card, code: maskIfNeeded(request.adminRole, card.code) } });
@@ -550,7 +581,10 @@ export function adminGiftCardsRoutes(app: FastifyInstance, _opts: unknown, done:
     });
     if (!card) {
       return reply.status(404).send({
-        error: { code: "GIFT_CARD_NOT_FOUND", message: "Gift card not found" },
+        error: {
+          code: "GIFT_CARD_NOT_FOUND",
+          message: apiCopy(request, "apiMessages.giftCardNotFound"),
+        },
       });
     }
     return reply.send({ data: { ...card, code: maskIfNeeded(request.adminRole, card.code) } });
@@ -564,7 +598,10 @@ export function adminGiftCardsRoutes(app: FastifyInstance, _opts: unknown, done:
     const idempotencyKey = request.headers["idempotency-key"] as string | undefined;
     if (!idempotencyKey) {
       return reply.status(400).send({
-        error: { code: "MISSING_IDEMPOTENCY_KEY", message: "Idempotency-Key header is required" },
+        error: {
+          code: "MISSING_IDEMPOTENCY_KEY",
+          message: apiCopy(request, "apiMessages.idempotencyRequired"),
+        },
       });
     }
 
@@ -573,7 +610,10 @@ export function adminGiftCardsRoutes(app: FastifyInstance, _opts: unknown, done:
     const redis = getRedisConnection();
     if (!redis) {
       return reply.status(500).send({
-        error: { code: "INTERNAL_ERROR", message: "Redis not available" },
+        error: {
+          code: "INTERNAL_ERROR",
+          message: apiCopy(request, "apiMessages.redisUnavailable"),
+        },
       });
     }
 

@@ -2,6 +2,7 @@ import { redeemSchema, rewardListQuerySchema, RewardsService } from "@loyaltyos/
 import type { FastifyInstance } from "fastify";
 
 import { prisma } from "../db.js";
+import { localizedEligibilityReason } from "../lib/eligibility-copy.js";
 import { LoyaltyError } from "../lib/errors.js";
 
 const rewards = new RewardsService(prisma);
@@ -19,7 +20,9 @@ export function rewardsRoutes(app: FastifyInstance, _opts: unknown, done: () => 
   app.get("/rewards/:id", async (request, reply) => {
     const { id } = request.params as { id: string };
     const memberId = (request.query as { memberId?: string }).memberId;
-    const result = await rewards.detail(id, memberId);
+    const result = await rewards.detail(id, memberId, (error) =>
+      localizedEligibilityReason(request, error),
+    );
     return reply.send({ data: result });
   });
 

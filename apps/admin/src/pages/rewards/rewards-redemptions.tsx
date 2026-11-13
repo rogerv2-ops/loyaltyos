@@ -14,7 +14,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import uiLocale from "@/i18n";
 import { fetchApi } from "@/lib/api-client";
+
+import { useUiText } from "../../lib/ui-text";
 
 interface Redemption {
   id: string;
@@ -36,6 +39,8 @@ interface RedemptionsMetrics {
 }
 
 export function RewardsRedemptionsPage(): JSX.Element {
+  const uiText = useUiText();
+
   const { id } = useParams<{ id: string }>();
 
   const rewardId = id ?? "";
@@ -70,16 +75,22 @@ export function RewardsRedemptionsPage(): JSX.Element {
         </Button>
         <div>
           <h1 className="text-2xl font-bold">
-            {reward ? `Redemptions: ${reward.name}` : "Redemptions"}
+            {reward
+              ? uiText("interface.redemptionsTitle", { name: reward.name })
+              : uiText("interface.redemptions")}
           </h1>
-          <p className="text-sm text-muted-foreground">Redemption history and metrics</p>
+          <p className="text-sm text-muted-foreground">
+            {uiText("interface.redemptionHistoryAndMetrics")}
+          </p>
         </div>
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Redemptions</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              {uiText("interface.totalRedemptions")}
+            </CardTitle>
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -89,7 +100,9 @@ export function RewardsRedemptionsPage(): JSX.Element {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Unique Members</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              {uiText("interface.uniqueMembers")}
+            </CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -99,12 +112,12 @@ export function RewardsRedemptionsPage(): JSX.Element {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Points Spent</CardTitle>
+            <CardTitle className="text-sm font-medium">{uiText("interface.pointsSpent")}</CardTitle>
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {metrics.totalPointsSpent.toLocaleString()} pts
+              {metrics.totalPointsSpent.toLocaleString(uiLocale.language)} pts
             </div>
           </CardContent>
         </Card>
@@ -112,7 +125,7 @@ export function RewardsRedemptionsPage(): JSX.Element {
 
       <Card>
         <CardHeader>
-          <CardTitle>Redemption History</CardTitle>
+          <CardTitle>{uiText("interface.redemptionHistory")}</CardTitle>
         </CardHeader>
         <CardContent>
           {isLoading ? (
@@ -122,21 +135,23 @@ export function RewardsRedemptionsPage(): JSX.Element {
               ))}
             </div>
           ) : items.length === 0 ? (
-            <p className="text-center text-muted-foreground py-8">No redemptions yet</p>
+            <p className="text-center text-muted-foreground py-8">
+              {uiText("interface.noRedemptionsYet")}
+            </p>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Member</TableHead>
-                  <TableHead>Points Spent</TableHead>
+                  <TableHead>{uiText("common.date")}</TableHead>
+                  <TableHead>{uiText("interface.member2")}</TableHead>
+                  <TableHead>{uiText("interface.pointsSpent")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {items.map((r) => (
                   <TableRow key={r.id}>
                     <TableCell>
-                      {new Date(r.createdAt).toLocaleDateString("en-US", {
+                      {new Date(r.createdAt).toLocaleDateString(uiLocale.language, {
                         year: "numeric",
                         month: "short",
                         day: "numeric",
@@ -152,7 +167,9 @@ export function RewardsRedemptionsPage(): JSX.Element {
                       </div>
                     </TableCell>
                     <TableCell>
-                      <Badge variant="secondary">{r.pointsSpent.toLocaleString()} pts</Badge>
+                      <Badge variant="secondary">
+                        {r.pointsSpent.toLocaleString(uiLocale.language)} pts
+                      </Badge>
                     </TableCell>
                   </TableRow>
                 ))}

@@ -23,7 +23,7 @@ const typeColors: Record<string, string> = {
 };
 
 export default function Transactions() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [filter, setFilter] = useState<string>("");
 
   const { data, isLoading } = useQuery({
@@ -53,7 +53,9 @@ export default function Transactions() {
                 : "border border-[var(--color-border)] text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-secondary)]"
             }`}
           >
-            {type === "" ? t("filterAll") : t(`transactionTypes.${type}`)}
+            {type === ""
+              ? t("filterAll")
+              : t(`transactionTypes.${type}`, { defaultValue: t("unknown") })}
           </button>
         ))}
       </div>
@@ -94,16 +96,16 @@ export default function Transactions() {
                     </p>
                   )}
                   <p className="text-xs text-[var(--color-text-secondary)]">
-                    {new Date(tx.createdAt).toLocaleDateString()}
+                    {new Date(tx.createdAt).toLocaleDateString(i18n.language)}
                   </p>
                 </div>
                 <div className="text-right">
                   <p className={`text-sm font-semibold ${sign === "+" ? "text-green-500" : ""}`}>
                     {sign}
-                    {Math.abs(tx.amount).toLocaleString()}
+                    {Math.abs(tx.amount).toLocaleString(i18n.language)}
                   </p>
                   <p className="text-xs text-[var(--color-text-secondary)]">
-                    {tx.balanceAfter.toLocaleString()}
+                    {tx.balanceAfter.toLocaleString(i18n.language)}
                   </p>
                 </div>
               </li>

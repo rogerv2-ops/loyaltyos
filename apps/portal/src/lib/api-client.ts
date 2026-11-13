@@ -1,3 +1,4 @@
+import i18n from "./i18n";
 const API_BASE = "/api/v1";
 
 export class ApiError extends Error {
@@ -18,6 +19,7 @@ export async function fetchApi<T>(path: string, options: RequestInit = {}): Prom
     credentials: "include",
     headers: {
       "Content-Type": "application/json",
+      "Accept-Language": i18n.language || "es-MX",
       "X-Program-Id": programId,
       ...(options.headers as Record<string, string> | undefined),
     },
@@ -27,12 +29,15 @@ export async function fetchApi<T>(path: string, options: RequestInit = {}): Prom
     sessionStorage.removeItem("auth-token");
     sessionStorage.removeItem("member-id");
     window.dispatchEvent(new CustomEvent("loyaltyos:auth-required"));
-    throw new ApiError(401, "Session expired");
+    throw new ApiError(401, i18n.t("UNAUTHORIZED", { ns: "errors" }));
   }
 
   const body = (await response.json()) as { data?: T; error?: { message: string } };
   if (!response.ok) {
-    throw new ApiError(response.status, body.error?.message ?? `Request failed`);
+    throw new ApiError(
+      response.status,
+      body.error?.message ?? i18n.t("REQUEST_ERROR", { ns: "errors" }),
+    );
   }
 
   return body.data as T;

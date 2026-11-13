@@ -3,6 +3,7 @@ import type { FastifyInstance } from "fastify";
 import { z } from "zod";
 
 import { prisma } from "../../db.js";
+import { apiCopy } from "../../lib/api-copy.js";
 
 const updateProgramSchema = z.object({
   defaultLocale: z.string().refine(isSupportedLocale, "Unsupported locale").optional(),
@@ -23,7 +24,7 @@ export function adminProgramsRoutes(app: FastifyInstance, _opts: unknown, done: 
 
     if (id !== request.programId) {
       return reply.status(404).send({
-        error: { code: "NOT_FOUND", message: "Program not found" },
+        error: { code: "NOT_FOUND", message: apiCopy(request, "apiMessages.programNotFound") },
       });
     }
 
@@ -48,7 +49,7 @@ export function adminProgramsRoutes(app: FastifyInstance, _opts: unknown, done: 
 
     if (!program) {
       return reply.status(404).send({
-        error: { code: "NOT_FOUND", message: "Program not found" },
+        error: { code: "NOT_FOUND", message: apiCopy(request, "apiMessages.programNotFound") },
       });
     }
 
@@ -62,7 +63,7 @@ export function adminProgramsRoutes(app: FastifyInstance, _opts: unknown, done: 
 
     if (id !== request.programId) {
       return reply.status(404).send({
-        error: { code: "NOT_FOUND", message: "Program not found" },
+        error: { code: "NOT_FOUND", message: apiCopy(request, "apiMessages.programNotFound") },
       });
     }
 

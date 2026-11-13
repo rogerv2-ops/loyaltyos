@@ -3,6 +3,7 @@ import type { FastifyInstance } from "fastify";
 import { z } from "zod";
 
 import { prisma } from "../../db.js";
+import { apiCopy } from "../../lib/api-copy.js";
 
 const tiers = new TiersService(prisma);
 
@@ -56,7 +57,9 @@ export function adminTiersRoutes(app: FastifyInstance, _opts: unknown, done: () 
     const { id } = z.object({ id: z.string() }).parse(request.params);
     const owned = await prisma.tier.findFirst({ where: { id, programId: request.programId } });
     if (!owned) {
-      return reply.status(404).send({ error: { code: "NOT_FOUND", message: "Tier not found" } });
+      return reply.status(404).send({
+        error: { code: "NOT_FOUND", message: apiCopy(request, "apiMessages.tierNotFound") },
+      });
     }
     const tier = await tiers.getById(id);
     return reply.send({ data: tier });
@@ -67,7 +70,9 @@ export function adminTiersRoutes(app: FastifyInstance, _opts: unknown, done: () 
     const { id } = z.object({ id: z.string() }).parse(request.params);
     const owned = await prisma.tier.findFirst({ where: { id, programId: request.programId } });
     if (!owned) {
-      return reply.status(404).send({ error: { code: "NOT_FOUND", message: "Tier not found" } });
+      return reply.status(404).send({
+        error: { code: "NOT_FOUND", message: apiCopy(request, "apiMessages.tierNotFound") },
+      });
     }
     const benefits = await tiers.benefits(id);
     return reply.send({ data: benefits });
@@ -80,7 +85,9 @@ export function adminTiersRoutes(app: FastifyInstance, _opts: unknown, done: () 
 
     const owned = await prisma.tier.findFirst({ where: { id, programId: request.programId } });
     if (!owned) {
-      return reply.status(404).send({ error: { code: "NOT_FOUND", message: "Tier not found" } });
+      return reply.status(404).send({
+        error: { code: "NOT_FOUND", message: apiCopy(request, "apiMessages.tierNotFound") },
+      });
     }
 
     const tier = await tiers.update(id, body);
@@ -93,7 +100,9 @@ export function adminTiersRoutes(app: FastifyInstance, _opts: unknown, done: () 
 
     const owned = await prisma.tier.findFirst({ where: { id, programId: request.programId } });
     if (!owned) {
-      return reply.status(404).send({ error: { code: "NOT_FOUND", message: "Tier not found" } });
+      return reply.status(404).send({
+        error: { code: "NOT_FOUND", message: apiCopy(request, "apiMessages.tierNotFound") },
+      });
     }
 
     await tiers.delete(id);

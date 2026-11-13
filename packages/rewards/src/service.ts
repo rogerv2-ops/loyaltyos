@@ -74,7 +74,11 @@ export class RewardsService {
     return this.repo.findMany(programId, filters);
   }
 
-  async detail(id: string, memberId?: string): Promise<DetailResult> {
+  async detail(
+    id: string,
+    memberId?: string,
+    formatReason?: (error: unknown) => string,
+  ): Promise<DetailResult> {
     const reward = await this.repo.findById(id);
     if (!reward) throw new RewardNotFoundError(id);
 
@@ -83,7 +87,11 @@ export class RewardsService {
         const eligibility = await this.checkEligibility(id, memberId);
         return { ...reward, eligible: eligibility.eligible, reason: eligibility.reason };
       } catch (err) {
-        return { ...reward, eligible: false, reason: (err as Error).message };
+        return {
+          ...reward,
+          eligible: false,
+          reason: formatReason ? formatReason(err) : (err as Error).message,
+        };
       }
     }
 

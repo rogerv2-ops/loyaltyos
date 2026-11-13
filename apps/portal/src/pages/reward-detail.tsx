@@ -8,7 +8,7 @@ import { fetchApi, postApi } from "../lib/api-client";
 import type { RedeemResult, RewardDetail as RewardDetailType } from "../types";
 
 export default function RewardDetail() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -75,7 +75,7 @@ export default function RewardDetail() {
       <div>
         <h1 className="text-2xl font-bold">{data.name}</h1>
         <p className="mt-1 text-lg font-semibold text-[var(--color-primary)]">
-          {data.pointsCost.toLocaleString()} {t("pointsCost")}
+          {data.pointsCost.toLocaleString(i18n.language)} {t("pointsCost")}
         </p>
       </div>
 

@@ -588,3 +588,38 @@ describe("RewardsService.redeem", () => {
     await expect(svc.redeem("rew-1", "mem-1", "idem-9")).rejects.toThrow("Tier");
   });
 });
+
+describe("detail reason presentation preserves eligibility and response fields", () => {
+  it.each([{ isActive: false }, { stock: 0 }, { tierRequired: "Gold" }, { pointsCost: 1000 }])(
+    "only formats a denial reason for %j",
+    async (overrides) => {
+      const row = rewardRow(overrides);
+      mockPrisma.reward.findFirst.mockResolvedValue(row);
+      mockPrisma.tier.findFirst.mockResolvedValue(tierRow());
+      mockPrisma.memberTier.findFirst.mockResolvedValue(null);
+      mockPrisma.pointAccount.findFirst.mockResolvedValue({ balance: 0 });
+      const service = new RewardsService(mockPrisma as never);
+      const original = await service.detail("rew-1", "mem-1");
+      const formatter = vi.fn(() => "Motivo traducido");
+      const localized = await service.detail("rew-1", "mem-1", formatter);
+      expect(localized).toEqual({ ...original, reason: "Motivo traducido" });
+      expect(Object.keys(localized).sort()).toEqual(Object.keys(original).sort());
+      expect(localized.eligible).toBe(false);
+      expect(formatter).toHaveBeenCalledTimes(1);
+      expect(mockPrisma.reward.update).not.toHaveBeenCalled();
+      expect(mockPrisma.pointTransaction.create).not.toHaveBeenCalled();
+    },
+  );
+
+  it("does not format or change an eligible result", async () => {
+    mockPrisma.reward.findFirst.mockResolvedValue(rewardRow());
+    mockPrisma.pointAccount.findFirst.mockResolvedValue({ balance: 1000 });
+    const service = new RewardsService(mockPrisma as never);
+    const formatter = vi.fn(() => "unused");
+    const original = await service.detail("rew-1", "mem-1");
+    const localized = await service.detail("rew-1", "mem-1", formatter);
+    expect(localized).toEqual(original);
+    expect(localized.eligible).toBe(true);
+    expect(formatter).not.toHaveBeenCalled();
+  });
+});

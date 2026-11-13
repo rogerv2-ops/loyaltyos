@@ -70,13 +70,13 @@ beforeEach(async () => {
   app = await buildApp({ logger: false });
 });
 
-describe("localizeMessage — prototype-safe lookup", () => {
-  it("returns the literal '__proto__' instead of traversing prototype", () => {
-    expect(localizeMessage("__proto__", "es-MX")).toBe("__proto__");
+describe("localizeMessage - prototype-safe lookup", () => {
+  it("uses generic localized copy instead of traversing __proto__", () => {
+    expect(localizeMessage("__proto__", "es-MX")).toBe("Error en la solicitud");
   });
 
-  it("returns the literal 'constructor' instead of traversing prototype", () => {
-    expect(localizeMessage("constructor", "es-MX")).toBe("constructor");
+  it("uses generic localized copy instead of traversing constructor", () => {
+    expect(localizeMessage("constructor", "es-MX")).toBe("Error en la solicitud");
   });
 
   it("still resolves real error codes", () => {
@@ -86,8 +86,8 @@ describe("localizeMessage — prototype-safe lookup", () => {
     expect(result.length).toBeGreaterThan(0);
   });
 
-  it("returns the code for unknown error codes", () => {
-    expect(localizeMessage("UNKNOWN_CODE_XYZ", "es-MX")).toBe("UNKNOWN_CODE_XYZ");
+  it("uses localized copy for unknown error codes, leaving machine code to the envelope", () => {
+    expect(localizeMessage("UNKNOWN_CODE_XYZ", "es-MX")).toBe("Error en la solicitud");
   });
 });
 

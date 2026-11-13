@@ -6,6 +6,7 @@ import type { FastifyInstance } from "fastify";
 import { z } from "zod";
 
 import { prisma } from "../../db.js";
+import { apiCopy } from "../../lib/api-copy.js";
 import { adaptCouponsMetrics, getBusinessMetrics } from "../../lib/business-metrics.js";
 
 /** A coupon code is bearer value: mask it unless the caller may reveal codes. */
@@ -98,7 +99,9 @@ export function adminCouponsRoutes(app: FastifyInstance, _opts: unknown, done: (
     const { id } = z.object({ id: z.string() }).parse(request.params);
     const owned = await prisma.coupon.findFirst({ where: { id, programId: request.programId } });
     if (!owned) {
-      return reply.status(404).send({ error: { code: "NOT_FOUND", message: "Coupon not found" } });
+      return reply.status(404).send({
+        error: { code: "NOT_FOUND", message: apiCopy(request, "apiMessages.couponNotFound") },
+      });
     }
     const coupon = await coupons.getById(id);
     return reply.send({
@@ -112,7 +115,9 @@ export function adminCouponsRoutes(app: FastifyInstance, _opts: unknown, done: (
     const body = updateSchema.parse(request.body);
     const owned = await prisma.coupon.findFirst({ where: { id, programId: request.programId } });
     if (!owned) {
-      return reply.status(404).send({ error: { code: "NOT_FOUND", message: "Coupon not found" } });
+      return reply.status(404).send({
+        error: { code: "NOT_FOUND", message: apiCopy(request, "apiMessages.couponNotFound") },
+      });
     }
     const coupon = await coupons.update(id, body);
     return reply.send({ data: coupon });
@@ -123,7 +128,9 @@ export function adminCouponsRoutes(app: FastifyInstance, _opts: unknown, done: (
     const { id } = z.object({ id: z.string() }).parse(request.params);
     const owned = await prisma.coupon.findFirst({ where: { id, programId: request.programId } });
     if (!owned) {
-      return reply.status(404).send({ error: { code: "NOT_FOUND", message: "Coupon not found" } });
+      return reply.status(404).send({
+        error: { code: "NOT_FOUND", message: apiCopy(request, "apiMessages.couponNotFound") },
+      });
     }
     await coupons.delete(id);
     return reply.status(204).send();
@@ -134,7 +141,9 @@ export function adminCouponsRoutes(app: FastifyInstance, _opts: unknown, done: (
     const { id } = z.object({ id: z.string() }).parse(request.params);
     const owned = await prisma.coupon.findFirst({ where: { id, programId: request.programId } });
     if (!owned) {
-      return reply.status(404).send({ error: { code: "NOT_FOUND", message: "Coupon not found" } });
+      return reply.status(404).send({
+        error: { code: "NOT_FOUND", message: apiCopy(request, "apiMessages.couponNotFound") },
+      });
     }
     const stats = await coupons.stats(id);
     return reply.send({

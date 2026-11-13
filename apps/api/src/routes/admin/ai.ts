@@ -4,6 +4,7 @@ import type { AdminRole } from "@loyaltyos/permissions";
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
 
+import { apiCopy } from "../../lib/api-copy.js";
 import { getRedisConnection } from "../../lib/queue.js";
 
 // Tools that only read data — executed immediately, without operator
@@ -126,7 +127,10 @@ export function adminAiRoutes(app: FastifyInstance, _opts: unknown, done: () => 
     async (request, reply) => {
       if (!request.adminId) {
         return reply.status(401).send({
-          error: { code: "UNAUTHORIZED", message: "Admin authentication required" },
+          error: {
+            code: "UNAUTHORIZED",
+            message: apiCopy(request, "apiMessages.adminAuthenticationRequired"),
+          },
         });
       }
 
@@ -134,14 +138,20 @@ export function adminAiRoutes(app: FastifyInstance, _opts: unknown, done: () => 
       // is not explicitly enabled or configured, refuse before opening a stream.
       if (process.env.AI_COMPANION_ENABLED !== "true") {
         return reply.status(404).send({
-          error: { code: "AI_COMPANION_DISABLED", message: "AI companion is disabled" },
+          error: {
+            code: "AI_COMPANION_DISABLED",
+            message: apiCopy(request, "apiMessages.aiDisabled"),
+          },
         });
       }
 
       const openrouterKey = process.env.OPENROUTER_API_KEY;
       if (!openrouterKey) {
         return reply.status(503).send({
-          error: { code: "AI_NOT_CONFIGURED", message: "AI companion is not configured" },
+          error: {
+            code: "AI_NOT_CONFIGURED",
+            message: apiCopy(request, "apiMessages.aiNotConfigured"),
+          },
         });
       }
 
@@ -188,7 +198,7 @@ export function adminAiRoutes(app: FastifyInstance, _opts: unknown, done: () => 
           return reply.status(503).send({
             error: {
               code: "AI_CONFIRMATION_UNAVAILABLE",
-              message: "Redis is required to confirm mutating tool calls",
+              message: apiCopy(request, "apiMessages.confirmationUnavailable"),
             },
           });
         }
@@ -199,7 +209,7 @@ export function adminAiRoutes(app: FastifyInstance, _opts: unknown, done: () => 
             return reply.status(409).send({
               error: {
                 code: "CONFIRMATION_INVALID",
-                message: "La confirmación no existe o ha expirado",
+                message: apiCopy(request, "apiMessages.confirmationExpired"),
               },
             });
           }
@@ -211,7 +221,7 @@ export function adminAiRoutes(app: FastifyInstance, _opts: unknown, done: () => 
             return reply.status(409).send({
               error: {
                 code: "CONFIRMATION_INVALID",
-                message: "La confirmación no es válida",
+                message: apiCopy(request, "apiMessages.confirmationInvalid"),
               },
             });
           }
@@ -220,7 +230,7 @@ export function adminAiRoutes(app: FastifyInstance, _opts: unknown, done: () => 
             return reply.status(409).send({
               error: {
                 code: "CONFIRMATION_INVALID",
-                message: "La confirmación no pertenece a esta sesión",
+                message: apiCopy(request, "apiMessages.confirmationWrongSession"),
               },
             });
           }

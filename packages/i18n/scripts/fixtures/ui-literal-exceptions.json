@@ -1,0 +1,152 @@
+[
+  {
+    "file": "apps/admin/src/components/layout/sidebar.tsx",
+    "value": "LoyaltyOS",
+    "reason": "Brand"
+  },
+  {
+    "file": "apps/admin/src/components/layout/sidebar.tsx",
+    "value": "Español",
+    "reason": "Language self-name"
+  },
+  {
+    "file": "apps/admin/src/components/layout/sidebar.tsx",
+    "value": "English",
+    "reason": "Language self-name"
+  },
+  {
+    "file": "apps/admin/src/pages/api-tokens.tsx",
+    "value": "Token",
+    "reason": "Technical identifier, example or unit"
+  },
+  {
+    "file": "apps/admin/src/pages/badge-editor.tsx",
+    "value": "https://...",
+    "reason": "Technical identifier, example or unit"
+  },
+  {
+    "file": "apps/admin/src/pages/badge-editor.tsx",
+    "value": "{\"all\":[{\"field\":\"totalSpent\",\"gte\":10000}]}",
+    "reason": "Technical identifier, example or unit"
+  },
+  {
+    "file": "apps/admin/src/pages/badges-list.tsx",
+    "value": "Temporal",
+    "reason": "Identical in Spanish and English"
+  },
+  {
+    "file": "apps/admin/src/pages/badges-list.tsx",
+    "value": "Social",
+    "reason": "Identical in Spanish and English"
+  },
+  {
+    "file": "apps/admin/src/pages/coalition/config.tsx",
+    "value": "https://apiv2.dcanje.mx/api",
+    "reason": "Technical identifier, example or unit"
+  },
+  {
+    "file": "apps/admin/src/pages/coalition/config.tsx",
+    "value": "RUT",
+    "reason": "Technical identifier, example or unit"
+  },
+  {
+    "file": "apps/admin/src/pages/coalition/config.tsx",
+    "value": "https://your-coalition-api.com",
+    "reason": "Technical identifier, example or unit"
+  },
+  {
+    "file": "apps/admin/src/pages/coalition/config.tsx",
+    "value": "ms",
+    "reason": "Technical identifier, example or unit"
+  },
+  {
+    "file": "apps/admin/src/pages/coalition/transactions.tsx",
+    "value": "ID",
+    "reason": "Technical identifier, example or unit"
+  },
+  {
+    "file": "apps/admin/src/pages/coupons-list.tsx",
+    "value": "Individual",
+    "reason": "Identical in Spanish and English"
+  },
+  {
+    "file": "apps/admin/src/pages/giftcards/batch-wizard.tsx",
+    "value": "MXN",
+    "reason": "Technical identifier, example or unit"
+  },
+  {
+    "file": "apps/admin/src/pages/giftcards/batch-wizard.tsx",
+    "value": "USD",
+    "reason": "Technical identifier, example or unit"
+  },
+  {
+    "file": "apps/admin/src/pages/giftcards/batch-wizard.tsx",
+    "value": "EUR",
+    "reason": "Technical identifier, example or unit"
+  },
+  {
+    "file": "apps/admin/src/pages/giftcards/batch-wizard.tsx",
+    "value": "Español",
+    "reason": "Language self-name"
+  },
+  {
+    "file": "apps/admin/src/pages/giftcards/batch-wizard.tsx",
+    "value": "English",
+    "reason": "Language self-name"
+  },
+  {
+    "file": "apps/admin/src/pages/giftcards/terms-editor.tsx",
+    "value": "Español",
+    "reason": "Language self-name"
+  },
+  {
+    "file": "apps/admin/src/pages/giftcards/terms-editor.tsx",
+    "value": "English",
+    "reason": "Language self-name"
+  },
+  {
+    "file": "apps/admin/src/pages/login.tsx",
+    "value": "admin@loyaltyos.dev",
+    "reason": "Technical identifier, example or unit"
+  },
+  {
+    "file": "apps/admin/src/pages/member-detail.tsx",
+    "value": "Total",
+    "reason": "Identical in Spanish and English"
+  },
+  {
+    "file": "apps/admin/src/pages/rewards/rewards-editor.tsx",
+    "value": "https://cdn.example.com/reward.png",
+    "reason": "Technical identifier, example or unit"
+  },
+  {
+    "file": "apps/admin/src/pages/rewards/rewards-list.tsx",
+    "value": "pts",
+    "reason": "Technical identifier, example or unit"
+  },
+  {
+    "file": "apps/admin/src/pages/rewards/rewards-redemptions.tsx",
+    "value": "pts",
+    "reason": "Technical identifier, example or unit"
+  },
+  {
+    "file": "apps/admin/src/pages/segment-builder.tsx",
+    "value": "mem-1&#10;mem-2&#10;mem-3",
+    "reason": "Technical identifier, example or unit"
+  },
+  {
+    "file": "apps/admin/src/pages/tiers-list.tsx",
+    "value": "Color",
+    "reason": "Identical in Spanish and English"
+  },
+  {
+    "file": "apps/portal/src/pages/profile.tsx",
+    "value": "English",
+    "reason": "Language self-name"
+  },
+  {
+    "file": "apps/portal/src/pages/profile.tsx",
+    "value": "Español",
+    "reason": "Language self-name"
+  }
+]
