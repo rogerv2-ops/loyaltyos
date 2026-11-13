@@ -16,6 +16,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import uiLocale from "@/i18n";
 import { fetchApi } from "@/lib/api-client";
 import type { Member, PaginatedResponse } from "@/types";
 
@@ -146,9 +147,12 @@ export function MembersListPage(): JSX.Element {
                       <TableCell>{member.email ?? t("members.na")}</TableCell>
                       <TableCell>{member.externalId ?? "--"}</TableCell>
                       <TableCell>
-                        {(member.pointAccount?.balance ?? 0).toLocaleString()} {t("members.points")}
+                        {(member.pointAccount?.balance ?? 0).toLocaleString(uiLocale.language)}{" "}
+                        {t("members.points")}
                       </TableCell>
-                      <TableCell>{new Date(member.joinedAt).toLocaleDateString()}</TableCell>
+                      <TableCell>
+                        {new Date(member.joinedAt).toLocaleDateString(uiLocale.language)}
+                      </TableCell>
                       <TableCell>
                         <Button
                           variant="ghost"

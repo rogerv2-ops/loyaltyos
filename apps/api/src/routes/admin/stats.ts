@@ -2,6 +2,7 @@ import type { FastifyInstance } from "fastify";
 import { z } from "zod";
 
 import { prisma } from "../../db.js";
+import { apiCopy } from "../../lib/api-copy.js";
 
 export function adminStatsRoutes(app: FastifyInstance, _opts: unknown, done: () => void): void {
   /** GET /admin/stats/dashboard — program-level loyalty analytics */
@@ -50,9 +51,9 @@ export function adminStatsRoutes(app: FastifyInstance, _opts: unknown, done: () 
       include: { variants: { select: { id: true, name: true } } },
     });
     if (!campaign) {
-      return reply
-        .status(404)
-        .send({ error: { code: "NOT_FOUND", message: "Campaign not found" } });
+      return reply.status(404).send({
+        error: { code: "NOT_FOUND", message: apiCopy(request, "apiMessages.campaignNotFound") },
+      });
     }
 
     const [applications, pointsAgg, memberGroups, variantRows] = await Promise.all([

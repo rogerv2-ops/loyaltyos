@@ -20,12 +20,14 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { fetchApi } from "@/lib/api-client";
 
+import { useUiText } from "../../lib/ui-text";
+
 const rewardSchema = z.object({
-  name: z.string().min(1, "Name is required").max(100),
+  name: z.string().min(1, "interface.nameIsRequired").max(100),
   description: z.string().optional().default(""),
-  pointsCost: z.coerce.number().int().min(1, "Must be at least 1"),
+  pointsCost: z.coerce.number().int().min(1, "interface.mustBeAtLeast1"),
   stock: z.coerce.number().int().min(0).optional().nullable(),
-  imageUrl: z.string().url("Must be a valid URL").optional().or(z.literal("")),
+  imageUrl: z.string().url("interface.mustBeAValidUrl").optional().or(z.literal("")),
   category: z.string().optional().default(""),
   tierRequired: z.string().optional().default(""),
   isActive: z.boolean().optional().default(false),
@@ -34,13 +36,13 @@ const rewardSchema = z.object({
 type RewardFormData = z.infer<typeof rewardSchema>;
 
 const CATEGORIES = [
-  { value: "", label: "None" },
-  { value: "DISCOUNT_FUTURE", label: "Discount" },
-  { value: "PHYSICAL_PRODUCT", label: "Physical Product" },
-  { value: "GIFT_CARD", label: "Gift Card" },
-  { value: "EXPERIENCE", label: "Experience" },
-  { value: "CHARITY_DONATION", label: "Charity Donation" },
-  { value: "COALITION_TRANSFER", label: "Coalition Transfer" },
+  { value: "", label: "interface.none" },
+  { value: "DISCOUNT_FUTURE", label: "interface.discount" },
+  { value: "PHYSICAL_PRODUCT", label: "interface.physicalProduct" },
+  { value: "GIFT_CARD", label: "interface.giftCard" },
+  { value: "EXPERIENCE", label: "interface.experience" },
+  { value: "CHARITY_DONATION", label: "interface.charityDonation" },
+  { value: "COALITION_TRANSFER", label: "interface.coalitionTransfer" },
 ];
 
 interface Tier {
@@ -55,6 +57,8 @@ interface EligibilityPreview {
 }
 
 export function RewardsEditorPage(): JSX.Element {
+  const uiText = useUiText();
+
   const { id } = useParams<{ id: string }>();
   const isEdit = Boolean(id);
   const navigate = useNavigate();
@@ -172,9 +176,13 @@ export function RewardsEditorPage(): JSX.Element {
           </Link>
         </Button>
         <div>
-          <h1 className="text-2xl font-bold">{isEdit ? "Edit Reward" : "New Reward"}</h1>
+          <h1 className="text-2xl font-bold">
+            {isEdit ? uiText("interface.editReward") : uiText("interface.newReward")}
+          </h1>
           <p className="text-sm text-muted-foreground">
-            {isEdit ? "Update reward details" : "Create a new reward for your catalog"}
+            {isEdit
+              ? uiText("interface.updateRewardDetails")
+              : uiText("interface.createANewRewardForYourCatalog")}
           </p>
         </div>
       </div>
@@ -182,30 +190,36 @@ export function RewardsEditorPage(): JSX.Element {
       <form onSubmit={handleFormSubmit} className="space-y-6">
         <Card>
           <CardHeader>
-            <CardTitle>Details</CardTitle>
+            <CardTitle>{uiText("interface.details")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="name">Name</Label>
-              <Input id="name" {...form.register("name")} placeholder="10% off next purchase" />
+              <Label htmlFor="name">{uiText("common.name")}</Label>
+              <Input
+                id="name"
+                {...form.register("name")}
+                placeholder={uiText("interface.10OffNextPurchase")}
+              />
               {form.formState.errors.name && (
-                <p className="text-sm text-destructive">{form.formState.errors.name.message}</p>
+                <p className="text-sm text-destructive">
+                  {uiText(form.formState.errors.name.message)}
+                </p>
               )}
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="description">Description (Markdown)</Label>
+              <Label htmlFor="description">{uiText("interface.descriptionMarkdown")}</Label>
               <Textarea
                 id="description"
                 {...form.register("description")}
                 rows={4}
-                placeholder="Get **10% off** your next online order..."
+                placeholder={uiText("interface.get10OffYourNextOnlineOrder")}
               />
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="pointsCost">Points Cost</Label>
+                <Label htmlFor="pointsCost">{uiText("interface.pointsCost")}</Label>
                 <Input
                   id="pointsCost"
                   type="number"
@@ -214,14 +228,17 @@ export function RewardsEditorPage(): JSX.Element {
                 />
                 {form.formState.errors.pointsCost && (
                   <p className="text-sm text-destructive">
-                    {form.formState.errors.pointsCost.message}
+                    {uiText(form.formState.errors.pointsCost.message)}
                   </p>
                 )}
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="stock">
-                  Stock <span className="text-muted-foreground text-xs">(empty = unlimited)</span>
+                  {uiText("interface.stock")}
+                  <span className="text-muted-foreground text-xs">
+                    {uiText("interface.emptyUnlimited")}
+                  </span>
                 </Label>
                 <Input
                   id="stock"
@@ -235,7 +252,7 @@ export function RewardsEditorPage(): JSX.Element {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="imageUrl">Image URL</Label>
+              <Label htmlFor="imageUrl">{uiText("interface.imageUrl")}</Label>
               <Input
                 id="imageUrl"
                 {...form.register("imageUrl")}
@@ -244,7 +261,7 @@ export function RewardsEditorPage(): JSX.Element {
               {form.watch("imageUrl") && (
                 <img
                   src={form.watch("imageUrl")}
-                  alt="Preview"
+                  alt={uiText("interface.preview")}
                   className="mt-2 h-32 w-32 rounded-md border object-cover"
                   onError={(e) => {
                     (e.target as HTMLImageElement).style.display = "none";
@@ -257,12 +274,12 @@ export function RewardsEditorPage(): JSX.Element {
 
         <Card>
           <CardHeader>
-            <CardTitle>Availability</CardTitle>
+            <CardTitle>{uiText("interface.availability")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="category">Category</Label>
+                <Label htmlFor="category">{uiText("interface.category")}</Label>
                 <Select
                   value={form.watch("category")}
                   onValueChange={(v) => {
@@ -270,12 +287,12 @@ export function RewardsEditorPage(): JSX.Element {
                   }}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Select a category" />
+                    <SelectValue placeholder={uiText("interface.selectACategory")} />
                   </SelectTrigger>
                   <SelectContent>
                     {CATEGORIES.map((c) => (
                       <SelectItem key={c.value} value={c.value}>
-                        {c.label}
+                        {uiText(c.label)}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -284,7 +301,10 @@ export function RewardsEditorPage(): JSX.Element {
 
               <div className="space-y-2">
                 <Label htmlFor="tierRequired">
-                  Tier Required <span className="text-muted-foreground text-xs">(optional)</span>
+                  {uiText("interface.tierRequired")}
+                  <span className="text-muted-foreground text-xs">
+                    {uiText("interface.optional")}
+                  </span>
                 </Label>
                 <Select
                   value={form.watch("tierRequired")}
@@ -293,10 +313,10 @@ export function RewardsEditorPage(): JSX.Element {
                   }}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="All tiers" />
+                    <SelectValue placeholder={uiText("interface.allTiers")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All tiers</SelectItem>
+                    <SelectItem value="">{uiText("interface.allTiers")}</SelectItem>
                     {(tiers ?? []).map((t) => (
                       <SelectItem key={t.id} value={t.name}>
                         {t.name}
@@ -312,12 +332,12 @@ export function RewardsEditorPage(): JSX.Element {
         {isEdit && (
           <Card>
             <CardHeader>
-              <CardTitle>Eligibility Preview</CardTitle>
+              <CardTitle>{uiText("interface.eligibilityPreview")}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex gap-2">
                 <Input
-                  placeholder="Member ID"
+                  placeholder={uiText("interface.memberId")}
                   value={previewMemberId}
                   onChange={(e) => {
                     setPreviewMemberId(e.target.value);
@@ -325,7 +345,7 @@ export function RewardsEditorPage(): JSX.Element {
                 />
                 <Button type="button" variant="outline" onClick={handlePreviewClick}>
                   <Eye className="mr-1 h-4 w-4" />
-                  Check
+                  {uiText("interface.check")}
                 </Button>
               </div>
               {previewResult && (
@@ -333,8 +353,8 @@ export function RewardsEditorPage(): JSX.Element {
                   className={`rounded-md px-4 py-3 text-sm ${previewResult.eligible ? "bg-green-50 text-green-700" : "bg-red-50 text-red-700"}`}
                 >
                   {previewResult.eligible
-                    ? "This member is eligible to redeem this reward."
-                    : (previewResult.reason ?? "Not eligible")}
+                    ? uiText("interface.thisMemberIsEligibleToRedeemThisReward")
+                    : (previewResult.reason ?? uiText("interface.notEligible"))}
                 </div>
               )}
             </CardContent>
@@ -344,10 +364,14 @@ export function RewardsEditorPage(): JSX.Element {
         <div className="flex gap-3">
           <Button type="submit" disabled={mutation.isPending}>
             <Save className="mr-2 h-4 w-4" />
-            {mutation.isPending ? "Saving..." : isEdit ? "Update Reward" : "Create Reward"}
+            {mutation.isPending
+              ? uiText("interface.saving")
+              : isEdit
+                ? uiText("interface.updateReward")
+                : uiText("interface.createReward")}
           </Button>
           <Button variant="outline" type="button" asChild>
-            <Link to="/rewards">Cancel</Link>
+            <Link to="/rewards">{uiText("common.cancel")}</Link>
           </Button>
         </div>
       </form>

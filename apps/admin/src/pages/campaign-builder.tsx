@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
 import { z } from "zod";
 
@@ -35,7 +36,9 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
+import uiLocale from "@/i18n";
 import { fetchApi } from "@/lib/api-client";
+import { translateEnum, useUiText } from "@/lib/ui-text";
 import { cn } from "@/lib/utils";
 import type { CampaignEstimate, CampaignType, PaginatedResponse, Segment } from "@/types";
 
@@ -47,57 +50,57 @@ const CAMPAIGN_TYPES: {
 }[] = [
   {
     value: "BONUS_POINTS",
-    label: "Bonus Points",
+    label: "interface.bonusPoints",
     icon: Star,
-    desc: "Award extra points on qualifying events",
+    desc: "interface.awardExtraPointsOnQualifyingEvents",
   },
   {
     value: "SPEND_AND_GET",
-    label: "Spend & Get",
+    label: "interface.spendGet",
     icon: Gift,
-    desc: "Bonus points proportional to transaction amount",
+    desc: "interface.bonusPointsProportionalToTransactionAmount",
   },
   {
     value: "FREQUENCY",
-    label: "Frequency",
+    label: "interface.frequency",
     icon: Repeat,
-    desc: "Reward members after N repeat actions",
+    desc: "interface.rewardMembersAfterNRepeatActions",
   },
   {
     value: "MILESTONE",
-    label: "Milestone",
+    label: "interface.milestone",
     icon: TrendingUp,
-    desc: "Award when hitting a cumulative target",
+    desc: "interface.awardWhenHittingACumulativeTarget",
   },
   {
     value: "REFERRAL",
-    label: "Referral",
+    label: "interface.referral",
     icon: Users,
-    desc: "Reward both referrer and referred member",
+    desc: "interface.rewardBothReferrerAndReferredMember",
   },
   {
     value: "BIRTHDAY",
-    label: "Birthday",
+    label: "interface.birthday",
     icon: Cake,
-    desc: "Bonus points during the member's birth month",
+    desc: "interface.bonusPointsDuringTheMemberSBirthMonth",
   },
   {
     value: "ANNIVERSARY",
-    label: "Anniversary",
+    label: "interface.anniversary",
     icon: Heart,
-    desc: "Bonus on the membership anniversary date",
+    desc: "interface.bonusOnTheMembershipAnniversaryDate",
   },
   {
     value: "FLASH_SALE",
-    label: "Flash Sale",
+    label: "interface.flashSale",
     icon: Zap,
-    desc: "Limited-time multiplier on all purchases",
+    desc: "interface.limitedTimeMultiplierOnAllPurchases",
   },
   {
     value: "TIER_UPGRADE_BONUS",
-    label: "Tier Upgrade",
+    label: "interface.tierUpgrade",
     icon: TrendingUp,
-    desc: "One-time award when member reaches a new tier",
+    desc: "interface.oneTimeAwardWhenMemberReachesANewTier",
   },
 ];
 
@@ -115,7 +118,7 @@ const wizardSchema = z.object({
     "FLASH_SALE",
     "TIER_UPGRADE_BONUS",
   ]),
-  name: z.string().min(1, "Name is required"),
+  name: z.string().min(1, "interface.nameIsRequired"),
   description: z.string().optional(),
   segmentId: z.string().optional(),
   maxUsesPerMember: z.coerce.number().int().min(0).optional(),
@@ -130,9 +133,19 @@ const wizardSchema = z.object({
 
 type WizardData = z.infer<typeof wizardSchema>;
 
-const STEPS = ["Type", "Audience", "Rules", "Channels", "Dates", "Review"];
+const STEPS = [
+  "interface.type",
+  "interface.audience",
+  "interface.rules",
+  "interface.channels",
+  "interface.dates",
+  "interface.review",
+];
 
 export function CampaignBuilderPage(): JSX.Element {
+  const uiText = useUiText();
+  const { i18n } = useTranslation();
+
   const { id } = useParams<{ id: string }>();
   const isEdit = Boolean(id);
   const navigate = useNavigate();
@@ -179,7 +192,7 @@ export function CampaignBuilderPage(): JSX.Element {
       });
       setEstimate(res);
     } catch {
-      setError("Failed to estimate impact");
+      setError(uiText("interface.failedToEstimateImpact"));
     } finally {
       setEstimating(false);
     }
@@ -223,7 +236,7 @@ export function CampaignBuilderPage(): JSX.Element {
       void queryClient.invalidateQueries({ queryKey: ["campaigns"] });
       navigate("/campaigns");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to save campaign");
+      setError(err instanceof Error ? err.message : uiText("interface.failedToSaveCampaign"));
     } finally {
       setSaving(false);
     }
@@ -246,9 +259,11 @@ export function CampaignBuilderPage(): JSX.Element {
             navigate("/campaigns");
           }}
         >
-          <ArrowLeft className="mr-2 h-4 w-4" /> Back
+          <ArrowLeft className="mr-2 h-4 w-4" /> {uiText("interface.back")}
         </Button>
-        <h1 className="text-3xl font-bold">{isEdit ? "Edit Campaign" : "New Campaign"}</h1>
+        <h1 className="text-3xl font-bold">
+          {isEdit ? uiText("interface.editCampaign") : uiText("interface.newCampaign")}
+        </h1>
       </div>
 
       {/* Step indicators */}
@@ -270,7 +285,7 @@ export function CampaignBuilderPage(): JSX.Element {
             )}
           >
             {i < step ? <Check className="mr-1 inline h-3 w-3" /> : null}
-            {label}
+            {uiText(label)}
           </button>
         ))}
       </div>
@@ -279,8 +294,10 @@ export function CampaignBuilderPage(): JSX.Element {
       {step === 0 && (
         <Card>
           <CardHeader>
-            <CardTitle>Campaign Type</CardTitle>
-            <CardDescription>Choose the type of campaign you want to create.</CardDescription>
+            <CardTitle>{uiText("interface.campaignType")}</CardTitle>
+            <CardDescription>
+              {uiText("interface.chooseTheTypeOfCampaignYouWantToCreate")}
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <RadioGroup
@@ -304,9 +321,9 @@ export function CampaignBuilderPage(): JSX.Element {
                       <div>
                         <div className="flex items-center gap-2 font-medium">
                           <Icon className="h-4 w-4 text-primary" />
-                          {t.label}
+                          {uiText(t.label)}
                         </div>
-                        <p className="mt-1 text-sm text-muted-foreground">{t.desc}</p>
+                        <p className="mt-1 text-sm text-muted-foreground">{uiText(t.desc)}</p>
                       </div>
                     </Label>
                   );
@@ -321,12 +338,14 @@ export function CampaignBuilderPage(): JSX.Element {
       {step === 1 && (
         <Card>
           <CardHeader>
-            <CardTitle>Audience</CardTitle>
-            <CardDescription>Select the target segment and per-member limits.</CardDescription>
+            <CardTitle>{uiText("interface.audience")}</CardTitle>
+            <CardDescription>
+              {uiText("interface.selectTheTargetSegmentAndPerMemberLimits")}
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label>Target Segment</Label>
+              <Label>{uiText("interface.targetSegment")}</Label>
               <Select
                 value={form.watch("segmentId") ?? "all"}
                 onValueChange={(v) => {
@@ -334,40 +353,47 @@ export function CampaignBuilderPage(): JSX.Element {
                 }}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="All members" />
+                  <SelectValue placeholder={uiText("interface.allMembers")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Members</SelectItem>
+                  <SelectItem value="all">{uiText("interface.allMembers2")}</SelectItem>
                   {segmentsData?.items.map((s) => (
                     <SelectItem key={s.id} value={s.id}>
-                      {s.name} ({s.type === "STATIC" ? s.memberIds.length : "dynamic"})
+                      {s.name} (
+                      {s.type === "STATIC" ? s.memberIds.length : uiText("interface.dynamic2")})
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="name">Campaign Name</Label>
-              <Input id="name" {...form.register("name")} placeholder="e.g. Welcome Bonus" />
+              <Label htmlFor="name">{uiText("interface.campaignName")}</Label>
+              <Input
+                id="name"
+                {...form.register("name")}
+                placeholder={uiText("interface.eGWelcomeBonus")}
+              />
               {form.formState.errors.name && (
-                <p className="text-sm text-destructive">{form.formState.errors.name.message}</p>
+                <p className="text-sm text-destructive">
+                  {uiText(form.formState.errors.name.message)}
+                </p>
               )}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="desc">Description</Label>
+              <Label htmlFor="desc">{uiText("common.description")}</Label>
               <Textarea
                 id="desc"
                 {...form.register("description")}
-                placeholder="Describe what this campaign does..."
+                placeholder={uiText("interface.describeWhatThisCampaignDoes")}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="maxUses">Max Uses Per Member</Label>
+              <Label htmlFor="maxUses">{uiText("interface.maxUsesPerMember")}</Label>
               <Input
                 id="maxUses"
                 type="number"
                 {...form.register("maxUsesPerMember")}
-                placeholder="Unlimited"
+                placeholder={uiText("interface.unlimited")}
               />
             </div>
           </CardContent>
@@ -378,33 +404,33 @@ export function CampaignBuilderPage(): JSX.Element {
       {step === 2 && (
         <Card>
           <CardHeader>
-            <CardTitle>Campaign Rules</CardTitle>
+            <CardTitle>{uiText("interface.campaignRules")}</CardTitle>
             <CardDescription>
-              Configure the point multiplier, budget, and stacking behavior.
+              {uiText("interface.configureThePointMultiplierBudgetAndStackingBehavior")}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="multiplier">Point Multiplier</Label>
+              <Label htmlFor="multiplier">{uiText("interface.pointMultiplier")}</Label>
               <Input id="multiplier" type="number" step="0.1" {...form.register("multiplier")} />
               <p className="text-sm text-muted-foreground">
-                Earned points are multiplied by this value (1x = no change)
+                {uiText("interface.earnedPointsAreMultipliedByThisValue1xNoChange")}
               </p>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="budget">Max Budget (points)</Label>
+              <Label htmlFor="budget">{uiText("interface.maxBudgetPoints")}</Label>
               <Input
                 id="budget"
                 type="number"
                 {...form.register("maxBudget")}
-                placeholder="No limit"
+                placeholder={uiText("interface.noLimit")}
               />
             </div>
             <div className="flex items-center justify-between">
               <div>
-                <Label>Stackable</Label>
+                <Label>{uiText("interface.stackable")}</Label>
                 <p className="text-sm text-muted-foreground">
-                  Allow this campaign to stack with others
+                  {uiText("interface.allowThisCampaignToStackWithOthers")}
                 </p>
               </div>
               <Switch
@@ -416,9 +442,9 @@ export function CampaignBuilderPage(): JSX.Element {
             </div>
             <div className="flex items-center justify-between">
               <div>
-                <Label>A/B Testing</Label>
+                <Label>{uiText("interface.aBTesting")}</Label>
                 <p className="text-sm text-muted-foreground">
-                  Create variants to test different configurations
+                  {uiText("interface.createVariantsToTestDifferentConfigurations")}
                 </p>
               </div>
               <Switch
@@ -436,8 +462,10 @@ export function CampaignBuilderPage(): JSX.Element {
       {step === 3 && (
         <Card>
           <CardHeader>
-            <CardTitle>Channels</CardTitle>
-            <CardDescription>Select which channels this campaign applies to.</CardDescription>
+            <CardTitle>{uiText("interface.channels")}</CardTitle>
+            <CardDescription>
+              {uiText("interface.selectWhichChannelsThisCampaignAppliesTo")}
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
@@ -458,7 +486,7 @@ export function CampaignBuilderPage(): JSX.Element {
                       }
                     }}
                   />
-                  <Label htmlFor={`ch-${ch}`}>{ch}</Label>
+                  <Label htmlFor={`ch-${ch}`}>{translateEnum(ch)}</Label>
                 </div>
               ))}
             </div>
@@ -470,16 +498,18 @@ export function CampaignBuilderPage(): JSX.Element {
       {step === 4 && (
         <Card>
           <CardHeader>
-            <CardTitle>Schedule</CardTitle>
-            <CardDescription>Set optional start and end dates for the campaign.</CardDescription>
+            <CardTitle>{uiText("interface.schedule")}</CardTitle>
+            <CardDescription>
+              {uiText("interface.setOptionalStartAndEndDatesForTheCampaign")}
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="startsAt">Start Date</Label>
+              <Label htmlFor="startsAt">{uiText("interface.startDate")}</Label>
               <Input id="startsAt" type="datetime-local" {...form.register("startsAt")} />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="endsAt">End Date</Label>
+              <Label htmlFor="endsAt">{uiText("interface.endDate")}</Label>
               <Input id="endsAt" type="datetime-local" {...form.register("endsAt")} />
             </div>
           </CardContent>
@@ -491,45 +521,55 @@ export function CampaignBuilderPage(): JSX.Element {
         <div className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Review Campaign</CardTitle>
-              <CardDescription>Verify all details before creating.</CardDescription>
+              <CardTitle>{uiText("interface.reviewCampaign")}</CardTitle>
+              <CardDescription>
+                {uiText("interface.verifyAllDetailsBeforeCreating")}
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <dl className="space-y-3">
                 <div className="flex justify-between">
-                  <dt className="text-muted-foreground">Type</dt>
-                  <dd className="font-medium">{selectedType?.label ?? form.watch("type")}</dd>
-                </div>
-                <div className="flex justify-between">
-                  <dt className="text-muted-foreground">Name</dt>
-                  <dd className="font-medium">{form.watch("name") || "—"}</dd>
-                </div>
-                <div className="flex justify-between">
-                  <dt className="text-muted-foreground">Multiplier</dt>
-                  <dd className="font-medium">{form.watch("multiplier") ?? 1}x</dd>
-                </div>
-                <div className="flex justify-between">
-                  <dt className="text-muted-foreground">Budget</dt>
+                  <dt className="text-muted-foreground">{uiText("interface.type")}</dt>
                   <dd className="font-medium">
-                    {form.watch("maxBudget") != null
-                      ? `${(form.watch("maxBudget") ?? 0).toLocaleString()} pts`
-                      : "Unlimited"}
+                    {selectedType ? uiText(selectedType.label) : form.watch("type")}
                   </dd>
                 </div>
                 <div className="flex justify-between">
-                  <dt className="text-muted-foreground">Stackable</dt>
-                  <dd className="font-medium">{form.watch("isStackable") ? "Yes" : "No"}</dd>
+                  <dt className="text-muted-foreground">{uiText("common.name")}</dt>
+                  <dd className="font-medium">{form.watch("name") || "—"}</dd>
                 </div>
                 <div className="flex justify-between">
-                  <dt className="text-muted-foreground">A/B Testing</dt>
-                  <dd className="font-medium">{form.watch("abTesting") ? "Yes" : "No"}</dd>
+                  <dt className="text-muted-foreground">{uiText("interface.multiplier")}</dt>
+                  <dd className="font-medium">{form.watch("multiplier") ?? 1}x</dd>
                 </div>
                 <div className="flex justify-between">
-                  <dt className="text-muted-foreground">Channels</dt>
+                  <dt className="text-muted-foreground">{uiText("interface.budget")}</dt>
+                  <dd className="font-medium">
+                    {form.watch("maxBudget") != null
+                      ? uiText("interface.amountPoints", {
+                          amount: (form.watch("maxBudget") ?? 0).toLocaleString(i18n.language),
+                        })
+                      : uiText("interface.unlimited")}
+                  </dd>
+                </div>
+                <div className="flex justify-between">
+                  <dt className="text-muted-foreground">{uiText("interface.stackable")}</dt>
+                  <dd className="font-medium">
+                    {form.watch("isStackable") ? uiText("interface.yes") : uiText("interface.no")}
+                  </dd>
+                </div>
+                <div className="flex justify-between">
+                  <dt className="text-muted-foreground">{uiText("interface.aBTesting")}</dt>
+                  <dd className="font-medium">
+                    {form.watch("abTesting") ? uiText("interface.yes") : uiText("interface.no")}
+                  </dd>
+                </div>
+                <div className="flex justify-between">
+                  <dt className="text-muted-foreground">{uiText("interface.channels")}</dt>
                   <dd className="font-medium">
                     {(form.watch("channels") ?? []).length > 0
-                      ? (form.watch("channels") ?? []).join(", ")
-                      : "All"}
+                      ? (form.watch("channels") ?? []).map(translateEnum).join(", ")
+                      : uiText("interface.all")}
                   </dd>
                 </div>
               </dl>
@@ -539,7 +579,7 @@ export function CampaignBuilderPage(): JSX.Element {
           {/* Impact estimation */}
           <Card>
             <CardHeader>
-              <CardTitle>Estimated Impact</CardTitle>
+              <CardTitle>{uiText("interface.estimatedImpact")}</CardTitle>
             </CardHeader>
             <CardContent>
               {estimating ? (
@@ -551,19 +591,27 @@ export function CampaignBuilderPage(): JSX.Element {
                 <div className="grid grid-cols-3 gap-4">
                   <div className="rounded-lg border p-3 text-center">
                     <p className="text-2xl font-bold">
-                      {estimate.estimatedMembers.toLocaleString()}
+                      {estimate.estimatedMembers.toLocaleString(uiLocale.language)}
                     </p>
-                    <p className="text-sm text-muted-foreground">Eligible Members</p>
+                    <p className="text-sm text-muted-foreground">
+                      {uiText("interface.eligibleMembers")}
+                    </p>
                   </div>
                   <div className="rounded-lg border p-3 text-center">
                     <p className="text-2xl font-bold">
-                      {estimate.estimatedPoints.toLocaleString()}
+                      {estimate.estimatedPoints.toLocaleString(uiLocale.language)}
                     </p>
-                    <p className="text-sm text-muted-foreground">Projected Points</p>
+                    <p className="text-sm text-muted-foreground">
+                      {uiText("interface.projectedPoints")}
+                    </p>
                   </div>
                   <div className="rounded-lg border p-3 text-center">
-                    <p className="text-2xl font-bold">{estimate.estimatedCost.toLocaleString()}</p>
-                    <p className="text-sm text-muted-foreground">Est. Cost (pts)</p>
+                    <p className="text-2xl font-bold">
+                      {estimate.estimatedCost.toLocaleString(uiLocale.language)}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      {uiText("interface.estCostPts")}
+                    </p>
                   </div>
                 </div>
               ) : (
@@ -573,7 +621,7 @@ export function CampaignBuilderPage(): JSX.Element {
                     void handleEstimate();
                   }}
                 >
-                  Calculate Estimate
+                  {uiText("interface.calculateEstimate")}
                 </Button>
               )}
             </CardContent>
@@ -589,7 +637,11 @@ export function CampaignBuilderPage(): JSX.Element {
             disabled={saving}
           >
             <Save className="mr-2 h-4 w-4" />
-            {saving ? "Saving..." : isEdit ? "Update Campaign" : "Create Campaign"}
+            {saving
+              ? uiText("interface.saving")
+              : isEdit
+                ? uiText("interface.updateCampaign")
+                : uiText("interface.createCampaign")}
           </Button>
         </div>
       )}
@@ -597,11 +649,12 @@ export function CampaignBuilderPage(): JSX.Element {
       {/* Navigation */}
       <div className="flex justify-between">
         <Button variant="outline" onClick={prev} disabled={step === 0}>
-          <ArrowLeft className="mr-2 h-4 w-4" /> Back
+          <ArrowLeft className="mr-2 h-4 w-4" /> {uiText("interface.back")}
         </Button>
         {step < STEPS.length - 1 && (
           <Button onClick={next}>
-            Next <ArrowRight className="ml-2 h-4 w-4" />
+            {uiText("common.next")}
+            <ArrowRight className="ml-2 h-4 w-4" />
           </Button>
         )}
       </div>

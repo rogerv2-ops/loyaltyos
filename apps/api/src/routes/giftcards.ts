@@ -3,6 +3,7 @@ import { createRedisLocks } from "@loyaltyos/giftcards";
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
 
+import { apiCopy } from "../lib/api-copy.js";
 import { giftCardService } from "../lib/giftcard-setup.js";
 import { getRedisConnection } from "../lib/queue.js";
 
@@ -71,7 +72,10 @@ export function giftCardsRoutes(app: FastifyInstance, _opts: unknown, done: () =
     const idempotencyKey = request.headers["idempotency-key"] as string | undefined;
     if (!idempotencyKey) {
       return reply.status(400).send({
-        error: { code: "MISSING_IDEMPOTENCY_KEY", message: "Idempotency-Key header is required" },
+        error: {
+          code: "MISSING_IDEMPOTENCY_KEY",
+          message: apiCopy(request, "apiMessages.idempotencyRequired"),
+        },
       });
     }
 

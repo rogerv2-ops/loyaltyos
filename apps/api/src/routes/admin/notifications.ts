@@ -3,6 +3,7 @@ import type { FastifyInstance } from "fastify";
 import { z } from "zod";
 
 import { prisma } from "../../db.js";
+import { apiCopy } from "../../lib/api-copy.js";
 import { audit } from "../../lib/audit.js";
 import { notificationsService as notifications } from "../../lib/notifications-setup.js";
 
@@ -104,9 +105,9 @@ export function adminNotificationsRoutes(
       where: { id, programId: request.programId },
     });
     if (!owned) {
-      return reply
-        .status(404)
-        .send({ error: { code: "NOT_FOUND", message: "Template not found" } });
+      return reply.status(404).send({
+        error: { code: "NOT_FOUND", message: apiCopy(request, "apiMessages.templateNotFound") },
+      });
     }
     const template = await notifications.getTemplate(id);
     return reply.send({ data: template });
@@ -120,9 +121,9 @@ export function adminNotificationsRoutes(
       where: { id, programId: request.programId },
     });
     if (!owned) {
-      return reply
-        .status(404)
-        .send({ error: { code: "NOT_FOUND", message: "Template not found" } });
+      return reply.status(404).send({
+        error: { code: "NOT_FOUND", message: apiCopy(request, "apiMessages.templateNotFound") },
+      });
     }
     const template = await notifications.updateTemplate(id, body);
     await audit(
@@ -143,9 +144,9 @@ export function adminNotificationsRoutes(
       where: { id, programId: request.programId },
     });
     if (!owned) {
-      return reply
-        .status(404)
-        .send({ error: { code: "NOT_FOUND", message: "Template not found" } });
+      return reply.status(404).send({
+        error: { code: "NOT_FOUND", message: apiCopy(request, "apiMessages.templateNotFound") },
+      });
     }
     await notifications.deleteTemplate(id);
     await audit(
@@ -169,9 +170,9 @@ export function adminNotificationsRoutes(
       where: { id, programId: request.programId },
     });
     if (!owned) {
-      return reply
-        .status(404)
-        .send({ error: { code: "NOT_FOUND", message: "Template not found" } });
+      return reply.status(404).send({
+        error: { code: "NOT_FOUND", message: apiCopy(request, "apiMessages.templateNotFound") },
+      });
     }
 
     const template = await notifications.getTemplate(id);
@@ -204,7 +205,10 @@ export function adminNotificationsRoutes(
 
     if (!memberId && !recipient) {
       return reply.status(400).send({
-        error: { code: "INVALID_INPUT", message: "Either memberId or recipient is required" },
+        error: {
+          code: "INVALID_INPUT",
+          message: apiCopy(request, "apiMessages.memberOrRecipientRequired"),
+        },
       });
     }
 
@@ -212,9 +216,9 @@ export function adminNotificationsRoutes(
       where: { id, programId: request.programId },
     });
     if (!owned) {
-      return reply
-        .status(404)
-        .send({ error: { code: "NOT_FOUND", message: "Template not found" } });
+      return reply.status(404).send({
+        error: { code: "NOT_FOUND", message: apiCopy(request, "apiMessages.templateNotFound") },
+      });
     }
 
     const template = await notifications.getTemplate(id);
@@ -234,9 +238,9 @@ export function adminNotificationsRoutes(
       });
 
       if (!member) {
-        return reply
-          .status(404)
-          .send({ error: { code: "NOT_FOUND", message: "Member not found" } });
+        return reply.status(404).send({
+          error: { code: "NOT_FOUND", message: apiCopy(request, "apiMessages.memberNotFound") },
+        });
       }
 
       targetMemberId = member.id;
@@ -268,7 +272,7 @@ export function adminNotificationsRoutes(
         return reply.status(400).send({
           error: {
             code: "NO_MEMBERS",
-            message: "Program has no members to anchor the test notification",
+            message: apiCopy(request, "apiMessages.testNotificationNoMembers"),
           },
         });
       }
@@ -378,7 +382,9 @@ export function adminNotificationsRoutes(
       where: { id, programId: request.programId },
     });
     if (!owned) {
-      return reply.status(404).send({ error: { code: "NOT_FOUND", message: "Webhook not found" } });
+      return reply.status(404).send({
+        error: { code: "NOT_FOUND", message: apiCopy(request, "apiMessages.webhookNotFound") },
+      });
     }
     const webhook = await notifications.getWebhook(id);
     return reply.send({ data: webhook });
@@ -392,7 +398,9 @@ export function adminNotificationsRoutes(
       where: { id, programId: request.programId },
     });
     if (!owned) {
-      return reply.status(404).send({ error: { code: "NOT_FOUND", message: "Webhook not found" } });
+      return reply.status(404).send({
+        error: { code: "NOT_FOUND", message: apiCopy(request, "apiMessages.webhookNotFound") },
+      });
     }
     const webhook = await notifications.updateWebhook(id, body);
     await audit(
@@ -413,7 +421,9 @@ export function adminNotificationsRoutes(
       where: { id, programId: request.programId },
     });
     if (!owned) {
-      return reply.status(404).send({ error: { code: "NOT_FOUND", message: "Webhook not found" } });
+      return reply.status(404).send({
+        error: { code: "NOT_FOUND", message: apiCopy(request, "apiMessages.webhookNotFound") },
+      });
     }
     await notifications.deleteWebhook(id);
     await audit(getProgramId(request), request.actor, "DELETE_WEBHOOK", "WebhookSubscription", id);

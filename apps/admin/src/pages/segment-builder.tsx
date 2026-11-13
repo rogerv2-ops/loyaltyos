@@ -28,27 +28,33 @@ import { Textarea } from "@/components/ui/textarea";
 import { fetchApi } from "@/lib/api-client";
 import type { RuleCondition, RuleGroup, Segment, SegmentMemberCount, SegmentType } from "@/types";
 
+import { translateLabel,useUiText } from "../lib/ui-text";
+
 const FIELD_OPTIONS = [
-  { value: "email", label: "Email", operators: ["contains", "eq"] },
-  { value: "phone", label: "Phone", operators: ["contains", "eq"] },
-  { value: "firstName", label: "First Name", operators: ["contains", "eq"] },
-  { value: "lastName", label: "Last Name", operators: ["contains", "eq"] },
-  { value: "tags", label: "Tags", operators: ["contains"] },
-  { value: "currentTier", label: "Current Tier", operators: ["eq", "neq"] },
-  { value: "totalSpent", label: "Total Spent", operators: ["gt", "lt", "gte", "lte", "between"] },
-  { value: "joinedAt", label: "Joined At", operators: ["gt", "lt", "between"] },
+  { value: "email", label: "common.email", operators: ["contains", "eq"] },
+  { value: "phone", label: "interface.phone", operators: ["contains", "eq"] },
+  { value: "firstName", label: "interface.firstName", operators: ["contains", "eq"] },
+  { value: "lastName", label: "interface.lastName", operators: ["contains", "eq"] },
+  { value: "tags", label: "interface.tags", operators: ["contains"] },
+  { value: "currentTier", label: "interface.currentTier", operators: ["eq", "neq"] },
+  {
+    value: "totalSpent",
+    label: "interface.totalSpent",
+    operators: ["gt", "lt", "gte", "lte", "between"],
+  },
+  { value: "joinedAt", label: "interface.joinedAt", operators: ["gt", "lt", "between"] },
 ] as const;
 
 const OPERATOR_LABELS: Record<string, string> = {
-  eq: "equals",
-  neq: "not equals",
-  gt: "greater than",
-  lt: "less than",
-  gte: "greater or equal",
-  lte: "less or equal",
-  in: "in",
-  between: "between",
-  contains: "contains",
+  eq: "interface.equals",
+  neq: "interface.notEquals",
+  gt: "interface.greaterThan",
+  lt: "interface.lessThan",
+  gte: "interface.greaterOrEqual",
+  lte: "interface.lessOrEqual",
+  in: "interface.in",
+  between: "interface.between",
+  contains: "interface.contains",
 };
 
 interface ConditionRow {
@@ -173,7 +179,7 @@ function ruleGroupToRows(rule: RuleGroup | null): RuleGroupRow[] {
 }
 
 const schema = z.object({
-  name: z.string().min(1, "Name is required"),
+  name: z.string().min(1, "interface.nameIsRequired"),
   description: z.string().optional(),
   type: z.enum(["STATIC", "DYNAMIC"]),
   memberIds: z.string().optional(),
@@ -182,6 +188,8 @@ const schema = z.object({
 type FormData = z.infer<typeof schema>;
 
 export function SegmentBuilderPage(): JSX.Element {
+  const uiText = useUiText();
+
   const { id } = useParams<{ id: string }>();
   const isEdit = Boolean(id);
   const navigate = useNavigate();
@@ -339,7 +347,7 @@ export function SegmentBuilderPage(): JSX.Element {
       void queryClient.invalidateQueries({ queryKey: ["segments"] });
       navigate("/segments");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to save segment");
+      setError(err instanceof Error ? err.message : uiText("interface.failedToSaveSegment"));
     } finally {
       setSaving(false);
     }
@@ -357,26 +365,34 @@ export function SegmentBuilderPage(): JSX.Element {
             navigate("/segments");
           }}
         >
-          <ArrowLeft className="mr-2 h-4 w-4" /> Back
+          <ArrowLeft className="mr-2 h-4 w-4" /> {uiText("interface.back")}
         </Button>
-        <h1 className="text-3xl font-bold">{isEdit ? "Edit Segment" : "New Segment"}</h1>
+        <h1 className="text-3xl font-bold">
+          {isEdit ? uiText("interface.editSegment") : uiText("interface.newSegment")}
+        </h1>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Segment Details</CardTitle>
+          <CardTitle>{uiText("interface.segmentDetails")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="name">Name</Label>
-              <Input id="name" {...form.register("name")} placeholder="e.g. High Spenders" />
+              <Label htmlFor="name">{uiText("common.name")}</Label>
+              <Input
+                id="name"
+                {...form.register("name")}
+                placeholder={uiText("interface.eGHighSpenders")}
+              />
               {form.formState.errors.name && (
-                <p className="text-sm text-destructive">{form.formState.errors.name.message}</p>
+                <p className="text-sm text-destructive">
+                  {uiText(form.formState.errors.name.message)}
+                </p>
               )}
             </div>
             <div className="space-y-2">
-              <Label>Type</Label>
+              <Label>{uiText("interface.type")}</Label>
               <Tabs
                 value={segmentType}
                 onValueChange={(v) => {
@@ -385,21 +401,21 @@ export function SegmentBuilderPage(): JSX.Element {
               >
                 <TabsList className="w-full">
                   <TabsTrigger value="DYNAMIC" className="flex-1">
-                    Dynamic
+                    {uiText("interface.dynamic")}
                   </TabsTrigger>
                   <TabsTrigger value="STATIC" className="flex-1">
-                    Static
+                    {uiText("interface.static")}
                   </TabsTrigger>
                 </TabsList>
               </Tabs>
             </div>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="desc">Description</Label>
+            <Label htmlFor="desc">{uiText("common.description")}</Label>
             <Textarea
               id="desc"
               {...form.register("description")}
-              placeholder="Describe this segment..."
+              placeholder={uiText("interface.describeThisSegment")}
             />
           </div>
         </CardContent>
@@ -409,8 +425,10 @@ export function SegmentBuilderPage(): JSX.Element {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
             <div>
-              <CardTitle>Rule Builder</CardTitle>
-              <CardDescription>Define conditions that members must match.</CardDescription>
+              <CardTitle>{uiText("interface.ruleBuilder")}</CardTitle>
+              <CardDescription>
+                {uiText("interface.defineConditionsThatMembersMustMatch")}
+              </CardDescription>
             </div>
             <div className="flex gap-2">
               <Button
@@ -423,13 +441,13 @@ export function SegmentBuilderPage(): JSX.Element {
               >
                 <Users className="mr-2 h-4 w-4" />
                 {counting
-                  ? "Counting..."
+                  ? uiText("interface.counting")
                   : memberCount != null
-                    ? `${String(memberCount)} members`
-                    : "Estimate Count"}
+                    ? uiText("interface.memberCount", { count: memberCount })
+                    : uiText("interface.estimateCount")}
               </Button>
               <Button variant="outline" size="sm" onClick={addGroup}>
-                <Plus className="mr-2 h-4 w-4" /> Add Group
+                <Plus className="mr-2 h-4 w-4" /> {uiText("interface.addGroup")}
               </Button>
             </div>
           </CardHeader>
@@ -448,13 +466,13 @@ export function SegmentBuilderPage(): JSX.Element {
                           toggleGroupMode(group.id);
                         }}
                       >
-                        {group.mode === "all" ? "AND" : "OR"}
+                        {uiText(group.mode === "all" ? "interface.and" : "interface.or")}
                       </Button>
                       <span className="text-sm text-muted-foreground">
-                        Group {gi + 1} —{" "}
+                        {uiText("interface.group")} {gi + 1} —{" "}
                         {group.mode === "all"
-                          ? "All conditions must match"
-                          : "Any condition must match"}
+                          ? uiText("interface.allConditionsMustMatch")
+                          : uiText("interface.anyConditionMustMatch")}
                       </span>
                     </div>
                   </AccordionTrigger>
@@ -473,12 +491,12 @@ export function SegmentBuilderPage(): JSX.Element {
                             }}
                           >
                             <SelectTrigger className="w-36">
-                              <SelectValue placeholder="Field..." />
+                              <SelectValue placeholder={uiText("interface.field")} />
                             </SelectTrigger>
                             <SelectContent>
                               {FIELD_OPTIONS.map((f) => (
                                 <SelectItem key={f.value} value={f.value}>
-                                  {f.label}
+                                  {uiText(f.label)}
                                 </SelectItem>
                               ))}
                             </SelectContent>
@@ -495,14 +513,14 @@ export function SegmentBuilderPage(): JSX.Element {
                             <SelectContent>
                               {operators.map((op) => (
                                 <SelectItem key={op} value={op}>
-                                  {OPERATOR_LABELS[op] ?? op}
+                                  {translateLabel(OPERATOR_LABELS, op)}
                                 </SelectItem>
                               ))}
                             </SelectContent>
                           </Select>
                           <Input
                             className="flex-1"
-                            placeholder="Value"
+                            placeholder={uiText("interface.value")}
                             value={cond.value}
                             onChange={(e) => {
                               updateCondition(group.id, cond.id, "value", e.target.value);
@@ -511,7 +529,7 @@ export function SegmentBuilderPage(): JSX.Element {
                           {cond.operator === "between" && (
                             <Input
                               className="w-24"
-                              placeholder="To"
+                              placeholder={uiText("interface.to")}
                               value={cond.value2 ?? ""}
                               onChange={(e) => {
                                 setGroups((prev) =>
@@ -549,7 +567,7 @@ export function SegmentBuilderPage(): JSX.Element {
                         addCondition(group.id);
                       }}
                     >
-                      <Plus className="mr-2 h-3 w-3" /> Add Condition
+                      <Plus className="mr-2 h-3 w-3" /> {uiText("interface.addCondition")}
                     </Button>
                     {groups.length > 1 && (
                       <Button
@@ -560,7 +578,7 @@ export function SegmentBuilderPage(): JSX.Element {
                           removeGroup(group.id);
                         }}
                       >
-                        <Trash2 className="mr-2 h-3 w-3" /> Remove Group
+                        <Trash2 className="mr-2 h-3 w-3" /> {uiText("interface.removeGroup")}
                       </Button>
                     )}
                   </AccordionContent>
@@ -574,8 +592,10 @@ export function SegmentBuilderPage(): JSX.Element {
       {segmentType === "STATIC" && (
         <Card>
           <CardHeader>
-            <CardTitle>Member IDs</CardTitle>
-            <CardDescription>Enter member IDs, one per line or comma-separated.</CardDescription>
+            <CardTitle>{uiText("interface.memberIds")}</CardTitle>
+            <CardDescription>
+              {uiText("interface.enterMemberIdsOnePerLineOrCommaSeparated")}
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <Textarea
@@ -597,7 +617,11 @@ export function SegmentBuilderPage(): JSX.Element {
         size="lg"
       >
         <Save className="mr-2 h-4 w-4" />
-        {saving ? "Saving..." : isEdit ? "Update Segment" : "Create Segment"}
+        {saving
+          ? uiText("interface.saving")
+          : isEdit
+            ? uiText("interface.updateSegment")
+            : uiText("interface.createSegment")}
       </Button>
     </div>
   );

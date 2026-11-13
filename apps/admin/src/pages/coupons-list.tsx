@@ -23,20 +23,25 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import uiLocale from "@/i18n";
 import { usePermission } from "@/lib/access";
 import { fetchApi } from "@/lib/api-client";
 import type { Coupon, PaginatedResponse } from "@/types";
 
+import { translateLabel,useUiText } from "../lib/ui-text";
+
 const DISCOUNT_LABELS: Record<string, string> = {
-  PERCENTAGE: "Percentage",
-  FIXED: "Fixed Amount",
-  FREE_PRODUCT: "Free Product",
-  FREE_SHIPPING: "Free Shipping",
-  EXTRA_POINTS: "Extra Points",
-  EXPERIENCE: "Experience",
+  PERCENTAGE: "interface.percentage",
+  FIXED: "interface.fixedAmount",
+  FREE_PRODUCT: "interface.freeProduct",
+  FREE_SHIPPING: "interface.freeShipping",
+  EXTRA_POINTS: "interface.extraPoints",
+  EXPERIENCE: "interface.experience",
 };
 
 export function CouponsListPage(): JSX.Element {
+  const uiText = useUiText();
+
   const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -46,9 +51,9 @@ export function CouponsListPage(): JSX.Element {
   const canWrite = usePermission("coupons.write");
 
   const modeLabels: Record<string, string> = {
-    SHARED: "Shared",
-    INDIVIDUAL: "Individual",
-    LIMITED: "Limited",
+    SHARED: "interface.shared",
+    INDIVIDUAL: "interface.individual",
+    LIMITED: "interface.limited",
   };
 
   const { data, isLoading, isError } = useQuery({
@@ -84,16 +89,16 @@ export function CouponsListPage(): JSX.Element {
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>All Coupons</CardTitle>
+          <CardTitle>{uiText("interface.allCoupons")}</CardTitle>
           <Select value={modeFilter} onValueChange={setModeFilter}>
             <SelectTrigger className="w-36">
-              <SelectValue placeholder="Mode" />
+              <SelectValue placeholder={uiText("interface.mode")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Modes</SelectItem>
-              <SelectItem value="SHARED">Shared</SelectItem>
+              <SelectItem value="all">{uiText("interface.allModes")}</SelectItem>
+              <SelectItem value="SHARED">{uiText("interface.shared")}</SelectItem>
               <SelectItem value="INDIVIDUAL">Individual</SelectItem>
-              <SelectItem value="LIMITED">Limited</SelectItem>
+              <SelectItem value="LIMITED">{uiText("interface.limited")}</SelectItem>
             </SelectContent>
           </Select>
         </CardHeader>
@@ -105,7 +110,7 @@ export function CouponsListPage(): JSX.Element {
               <Skeleton className="h-10 w-full" />
             </div>
           ) : isError || !data ? (
-            <p className="text-destructive">Failed to load coupons.</p>
+            <p className="text-destructive">{uiText("interface.failedToLoadCoupons")}</p>
           ) : data.items.length === 0 ? (
             <p className="text-muted-foreground">{t("common.noResults")}</p>
           ) : (
@@ -113,12 +118,12 @@ export function CouponsListPage(): JSX.Element {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Code</TableHead>
+                    <TableHead>{uiText("interface.code")}</TableHead>
                     <TableHead>{t("campaigns.type")}</TableHead>
-                    <TableHead>Mode</TableHead>
-                    <TableHead>Usage</TableHead>
+                    <TableHead>{uiText("interface.mode")}</TableHead>
+                    <TableHead>{uiText("interface.usage")}</TableHead>
                     <TableHead>{t("common.status")}</TableHead>
-                    <TableHead>Expires</TableHead>
+                    <TableHead>{uiText("interface.expires")}</TableHead>
                     <TableHead className="w-20" />
                   </TableRow>
                 </TableHeader>
@@ -128,11 +133,11 @@ export function CouponsListPage(): JSX.Element {
                       <TableCell className="font-mono font-medium">{c.code}</TableCell>
                       <TableCell>
                         <Badge variant="secondary">
-                          {DISCOUNT_LABELS[c.discountType] ?? c.discountType}
+                          {translateLabel(DISCOUNT_LABELS, c.discountType)}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-sm text-muted-foreground">
-                        {modeLabels[c.mode] ?? c.mode}
+                        {translateLabel(modeLabels, c.mode)}
                       </TableCell>
                       <TableCell className="text-sm">
                         {c.usedCount}
@@ -150,7 +155,9 @@ export function CouponsListPage(): JSX.Element {
                         </Badge>
                       </TableCell>
                       <TableCell className="text-sm text-muted-foreground">
-                        {c.expiresAt ? new Date(c.expiresAt).toLocaleDateString() : "Never"}
+                        {c.expiresAt
+                          ? new Date(c.expiresAt).toLocaleDateString(uiLocale.language)
+                          : uiText("interface.never")}
                       </TableCell>
                       <TableCell>
                         {canWrite && (
@@ -183,7 +190,7 @@ export function CouponsListPage(): JSX.Element {
                     {t("common.previous")}
                   </Button>
                   <span className="text-sm text-muted-foreground">
-                    Page {page} of {data.totalPages}
+                    {uiText("interface.page")} {page} {uiText("interface.of")} {data.totalPages}
                   </span>
                   <Button
                     variant="outline"

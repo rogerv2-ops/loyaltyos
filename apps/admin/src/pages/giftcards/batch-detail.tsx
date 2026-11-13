@@ -1,5 +1,4 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { format } from "date-fns";
 import { ArrowLeft, Download, XCircle } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -28,8 +27,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import uiLocale from "@/i18n";
 import { usePermission } from "@/lib/access";
 import { fetchApi } from "@/lib/api-client";
+import { formatUiDate as format, translateUi } from "@/lib/ui-text";
 import type { GiftCard, GiftCardBatch, PaginatedResponse } from "@/types";
 
 const TERMINAL_STATUSES = new Set(["ready", "partial", "failed", "cancelled"]);
@@ -90,7 +91,7 @@ export function BatchDetailPage(): JSX.Element {
       credentials: "include",
     })
       .then((res) => {
-        if (!res.ok) throw new Error("Export failed");
+        if (!res.ok) throw new Error(translateUi("interface.exportFailed"));
         return res.blob();
       })
       .then((blob) => {
@@ -146,7 +147,7 @@ export function BatchDetailPage(): JSX.Element {
           </Button>
           <h1 className="text-3xl font-bold">{batch.name}</h1>
           <Badge className={STATUS_COLORS[batch.status] ?? ""}>
-            {t(`giftcards.status.${batch.status}`)}
+            {t(`giftcards.status.${batch.status}`, { defaultValue: t("common.unknown") })}
           </Badge>
         </div>
         <div className="flex items-center gap-2">
@@ -208,7 +209,8 @@ export function BatchDetailPage(): JSX.Element {
           </CardHeader>
           <CardContent>
             <p className="text-2xl font-bold">
-              {batch.generatedCount.toLocaleString()} / {batch.quantity.toLocaleString()}
+              {batch.generatedCount.toLocaleString(uiLocale.language)} /{" "}
+              {batch.quantity.toLocaleString(uiLocale.language)}
             </p>
           </CardContent>
         </Card>
@@ -220,7 +222,7 @@ export function BatchDetailPage(): JSX.Element {
           </CardHeader>
           <CardContent>
             <p className="text-2xl font-bold">
-              {batch.initialAmount.toLocaleString()} {batch.currency}
+              {batch.initialAmount.toLocaleString(uiLocale.language)} {batch.currency}
             </p>
           </CardContent>
         </Card>
@@ -232,7 +234,8 @@ export function BatchDetailPage(): JSX.Element {
           </CardHeader>
           <CardContent>
             <p className="text-2xl font-bold">
-              {(batch.quantity * batch.initialAmount).toLocaleString()} {batch.currency}
+              {(batch.quantity * batch.initialAmount).toLocaleString(uiLocale.language)}{" "}
+              {batch.currency}
             </p>
           </CardContent>
         </Card>
@@ -285,14 +288,16 @@ export function BatchDetailPage(): JSX.Element {
                     >
                       <TableCell className="font-mono">{card.code}</TableCell>
                       <TableCell className="text-right">
-                        {card.balance.toLocaleString()} {card.currency}
+                        {card.balance.toLocaleString(uiLocale.language)} {card.currency}
                       </TableCell>
                       <TableCell className="text-right">
-                        {card.initialAmount.toLocaleString()}
+                        {card.initialAmount.toLocaleString(uiLocale.language)}
                       </TableCell>
                       <TableCell>
                         <Badge className={STATUS_COLORS[card.status] ?? ""}>
-                          {t(`giftcards.status.${card.status}`)}
+                          {t(`giftcards.status.${card.status}`, {
+                            defaultValue: t("common.unknown"),
+                          })}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-sm text-muted-foreground">

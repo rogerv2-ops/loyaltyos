@@ -22,13 +22,18 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import uiLocale from "@/i18n";
 import { usePermission } from "@/lib/access";
 import { fetchApi } from "@/lib/api-client";
 import { cn } from "@/lib/utils";
 import type { Campaign, PaginatedResponse } from "@/types";
 
+import { useUiText } from "../lib/ui-text";
+
 export function CampaignsListPage(): JSX.Element {
-  const { t } = useTranslation();
+  const uiText = useUiText();
+
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
@@ -81,7 +86,7 @@ export function CampaignsListPage(): JSX.Element {
 
       <Card>
         <CardHeader>
-          <CardTitle>All Campaigns</CardTitle>
+          <CardTitle>{uiText("interface.allCampaigns")}</CardTitle>
         </CardHeader>
         <CardContent>
           {isLoading ? (
@@ -91,7 +96,7 @@ export function CampaignsListPage(): JSX.Element {
               <Skeleton className="h-10 w-full" />
             </div>
           ) : isError || !data ? (
-            <p className="text-destructive">Failed to load campaigns.</p>
+            <p className="text-destructive">{uiText("interface.failedToLoadCampaigns")}</p>
           ) : data.items.length === 0 ? (
             <p className="text-muted-foreground">{t("common.noResults")}</p>
           ) : (
@@ -102,9 +107,9 @@ export function CampaignsListPage(): JSX.Element {
                     <TableHead>{t("common.name")}</TableHead>
                     <TableHead>{t("campaigns.type")}</TableHead>
                     <TableHead>{t("common.status")}</TableHead>
-                    <TableHead>Budget</TableHead>
-                    <TableHead>Starts</TableHead>
-                    <TableHead>Ends</TableHead>
+                    <TableHead>{uiText("interface.budget")}</TableHead>
+                    <TableHead>{uiText("interface.starts")}</TableHead>
+                    <TableHead>{uiText("interface.ends")}</TableHead>
                     <TableHead className="w-20" />
                   </TableRow>
                 </TableHeader>
@@ -127,13 +132,19 @@ export function CampaignsListPage(): JSX.Element {
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        {c.maxBudget != null ? `${c.maxBudget.toLocaleString()} pts` : "Unlimited"}
+                        {c.maxBudget != null
+                          ? uiText("interface.amountPoints", {
+                              amount: c.maxBudget.toLocaleString(i18n.language),
+                            })
+                          : uiText("interface.unlimited")}
                       </TableCell>
                       <TableCell className="text-sm text-muted-foreground">
-                        {c.startsAt ? new Date(c.startsAt).toLocaleDateString() : "—"}
+                        {c.startsAt
+                          ? new Date(c.startsAt).toLocaleDateString(uiLocale.language)
+                          : "—"}
                       </TableCell>
                       <TableCell className="text-sm text-muted-foreground">
-                        {c.endsAt ? new Date(c.endsAt).toLocaleDateString() : "—"}
+                        {c.endsAt ? new Date(c.endsAt).toLocaleDateString(uiLocale.language) : "—"}
                       </TableCell>
                       <TableCell>
                         {canWrite && (
@@ -159,7 +170,7 @@ export function CampaignsListPage(): JSX.Element {
                                   }}
                                 >
                                   <Play className="mr-2 h-4 w-4" />
-                                  Activate
+                                  {uiText("interface.activate")}
                                 </DropdownMenuItem>
                               )}
                               {c.isActive && (
@@ -169,7 +180,7 @@ export function CampaignsListPage(): JSX.Element {
                                   }}
                                 >
                                   <Pause className="mr-2 h-4 w-4" />
-                                  Pause
+                                  {uiText("interface.pause")}
                                 </DropdownMenuItem>
                               )}
                               <DropdownMenuItem
@@ -179,7 +190,7 @@ export function CampaignsListPage(): JSX.Element {
                                 }}
                               >
                                 <Archive className="mr-2 h-4 w-4" />
-                                Archive
+                                {uiText("interface.archive")}
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
@@ -202,7 +213,7 @@ export function CampaignsListPage(): JSX.Element {
                     {t("common.previous")}
                   </Button>
                   <span className="text-sm text-muted-foreground">
-                    Page {page} of {data.totalPages}
+                    {uiText("interface.page")} {page} {uiText("interface.of")} {data.totalPages}
                   </span>
                   <Button
                     variant="outline"

@@ -27,7 +27,7 @@ function useWishlist() {
 }
 
 export default function Rewards() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const wishlist = useWishlist();
   const [category, setCategory] = useState("");
   const [wishlistOnly, setWishlistOnly] = useState(false);
@@ -168,7 +168,7 @@ export default function Rewards() {
                   <p className="mt-2 truncate text-sm font-medium">{reward.name}</p>
                   <div className="mt-1 flex items-center justify-between">
                     <span className="text-xs font-semibold text-[var(--color-primary)]">
-                      {reward.pointsCost.toLocaleString()} {t("pointsCost")}
+                      {reward.pointsCost.toLocaleString(i18n.language)} {t("pointsCost")}
                     </span>
                     {reward.stock !== null && reward.stock <= 0 && (
                       <span className="rounded bg-red-100 px-1.5 py-0.5 text-xs text-red-600">

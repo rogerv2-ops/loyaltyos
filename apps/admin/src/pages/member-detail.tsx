@@ -30,16 +30,18 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import uiLocale from "@/i18n";
 import { usePermission } from "@/lib/access";
 import { fetchApi } from "@/lib/api-client";
+import { translateEnum, useUiText } from "@/lib/ui-text";
 import type { Balance, Member, PaginatedResponse, PointTransaction } from "@/types";
 
 const adjustSchema = z.object({
   amount: z.coerce
     .number()
     .int()
-    .refine((v) => v !== 0, "Amount must not be zero"),
-  reason: z.string().min(1, "Reason is required"),
+    .refine((v) => v !== 0, "interface.amountMustNotBeZero"),
+  reason: z.string().min(1, "interface.reasonIsRequired"),
 });
 
 type AdjustFormValues = z.infer<typeof adjustSchema>;
@@ -53,6 +55,8 @@ const transactionTypeColors: Record<string, "default" | "secondary" | "destructi
 };
 
 export function MemberDetailPage(): JSX.Element {
+  const uiText = useUiText();
+
   const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const memberId = id ?? "";
@@ -117,7 +121,7 @@ export function MemberDetailPage(): JSX.Element {
       void queryClient.invalidateQueries({ queryKey: ["member-balance", memberId] });
       void queryClient.invalidateQueries({ queryKey: ["member-transactions", memberId] });
     } catch (err) {
-      setAdjustError(err instanceof Error ? err.message : "Adjustment failed");
+      setAdjustError(err instanceof Error ? err.message : uiText("interface.adjustmentFailed"));
     } finally {
       setAdjusting(false);
     }
@@ -134,7 +138,7 @@ export function MemberDetailPage(): JSX.Element {
         </Button>
         <Card>
           <CardContent className="py-8 text-center">
-            <p className="text-destructive">Member not found</p>
+            <p className="text-destructive">{uiText("interface.memberNotFound")}</p>
           </CardContent>
         </Card>
       </div>
@@ -162,7 +166,7 @@ export function MemberDetailPage(): JSX.Element {
               `${member?.firstName ?? ""} ${member?.lastName ?? ""}`.trim() || "N/A"
             )}
           </CardTitle>
-          <CardDescription>Member Profile</CardDescription>
+          <CardDescription>{uiText("interface.memberProfile")}</CardDescription>
         </CardHeader>
         <CardContent>
           {memberLoading ? (
@@ -174,24 +178,26 @@ export function MemberDetailPage(): JSX.Element {
           ) : (
             <dl className="grid gap-2 sm:grid-cols-2">
               <div>
-                <dt className="text-sm text-muted-foreground">Email</dt>
+                <dt className="text-sm text-muted-foreground">{uiText("common.email")}</dt>
                 <dd>{member?.email ?? "N/A"}</dd>
               </div>
               <div>
-                <dt className="text-sm text-muted-foreground">Phone</dt>
+                <dt className="text-sm text-muted-foreground">{uiText("interface.phone")}</dt>
                 <dd>{member?.phone ?? "N/A"}</dd>
               </div>
               <div>
-                <dt className="text-sm text-muted-foreground">External ID</dt>
+                <dt className="text-sm text-muted-foreground">{uiText("interface.externalId")}</dt>
                 <dd>{member?.externalId ?? "--"}</dd>
               </div>
               <div>
-                <dt className="text-sm text-muted-foreground">Joined</dt>
-                <dd>{member ? new Date(member.joinedAt).toLocaleDateString() : "--"}</dd>
+                <dt className="text-sm text-muted-foreground">{uiText("interface.joined")}</dt>
+                <dd>
+                  {member ? new Date(member.joinedAt).toLocaleDateString(uiLocale.language) : "--"}
+                </dd>
               </div>
               {member?.tags && member.tags.length > 0 && (
                 <div className="sm:col-span-2">
-                  <dt className="mb-1 text-sm text-muted-foreground">Tags</dt>
+                  <dt className="mb-1 text-sm text-muted-foreground">{uiText("interface.tags")}</dt>
                   <dd className="flex flex-wrap gap-1">
                     {member.tags.map((tag) => (
                       <Badge key={tag} variant="secondary">
@@ -210,7 +216,7 @@ export function MemberDetailPage(): JSX.Element {
       <div className="grid gap-6 lg:grid-cols-3">
         <Card className="lg:col-span-2">
           <CardHeader>
-            <CardTitle>Points Balance</CardTitle>
+            <CardTitle>{uiText("interface.pointsBalance")}</CardTitle>
           </CardHeader>
           <CardContent>
             {balanceLoading ? (
@@ -222,20 +228,22 @@ export function MemberDetailPage(): JSX.Element {
             ) : (
               <div className="grid grid-cols-3 gap-4">
                 <div className="rounded-lg bg-muted p-4 text-center">
-                  <p className="text-sm text-muted-foreground">Confirmed</p>
+                  <p className="text-sm text-muted-foreground">{uiText("interface.confirmed")}</p>
                   <p className="text-2xl font-bold text-green-600">
-                    {(balance?.confirmed ?? 0).toLocaleString()}
+                    {(balance?.confirmed ?? 0).toLocaleString(uiLocale.language)}
                   </p>
                 </div>
                 <div className="rounded-lg bg-muted p-4 text-center">
-                  <p className="text-sm text-muted-foreground">Pending</p>
+                  <p className="text-sm text-muted-foreground">{uiText("interface.pending")}</p>
                   <p className="text-2xl font-bold text-yellow-600">
-                    {(balance?.pending ?? 0).toLocaleString()}
+                    {(balance?.pending ?? 0).toLocaleString(uiLocale.language)}
                   </p>
                 </div>
                 <div className="rounded-lg bg-muted p-4 text-center">
                   <p className="text-sm text-muted-foreground">Total</p>
-                  <p className="text-2xl font-bold">{(balance?.total ?? 0).toLocaleString()}</p>
+                  <p className="text-2xl font-bold">
+                    {(balance?.total ?? 0).toLocaleString(uiLocale.language)}
+                  </p>
                 </div>
               </div>
             )}
@@ -245,13 +253,15 @@ export function MemberDetailPage(): JSX.Element {
         {canWrite && (
           <Card>
             <CardHeader>
-              <CardTitle>Adjust Points</CardTitle>
-              <CardDescription>Manually add or remove points for this member.</CardDescription>
+              <CardTitle>{uiText("interface.adjustPoints")}</CardTitle>
+              <CardDescription>
+                {uiText("interface.manuallyAddOrRemovePointsForThisMember")}
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
                 <DialogTrigger asChild>
-                  <Button className="w-full">Adjust Points</Button>
+                  <Button className="w-full">{uiText("interface.adjustPoints")}</Button>
                 </DialogTrigger>
                 <DialogContent>
                   <form
@@ -261,31 +271,35 @@ export function MemberDetailPage(): JSX.Element {
                     }}
                   >
                     <DialogHeader>
-                      <DialogTitle>Adjust Points</DialogTitle>
+                      <DialogTitle>{uiText("interface.adjustPoints")}</DialogTitle>
                       <DialogDescription>
-                        Enter a positive amount to add points or negative to deduct.
+                        {uiText("interface.enterAPositiveAmountToAddPointsOrNegativeToDeduct")}
                       </DialogDescription>
                     </DialogHeader>
                     <div className="grid gap-4 py-4">
                       <div>
-                        <Label htmlFor="amount">Amount</Label>
+                        <Label htmlFor="amount">{uiText("interface.amount")}</Label>
                         <Input id="amount" type="number" {...register("amount")} />
                         {errors.amount && (
-                          <p className="mt-1 text-sm text-destructive">{errors.amount.message}</p>
+                          <p className="mt-1 text-sm text-destructive">
+                            {uiText(errors.amount.message)}
+                          </p>
                         )}
                       </div>
                       <div>
-                        <Label htmlFor="reason">Reason</Label>
+                        <Label htmlFor="reason">{uiText("interface.reason")}</Label>
                         <Input id="reason" {...register("reason")} />
                         {errors.reason && (
-                          <p className="mt-1 text-sm text-destructive">{errors.reason.message}</p>
+                          <p className="mt-1 text-sm text-destructive">
+                            {uiText(errors.reason.message)}
+                          </p>
                         )}
                       </div>
                       {adjustError && <p className="text-sm text-destructive">{adjustError}</p>}
                     </div>
                     <DialogFooter>
                       <Button type="submit" disabled={adjusting}>
-                        {adjusting ? "Submitting..." : "Submit"}
+                        {adjusting ? uiText("interface.submitting") : uiText("interface.submit")}
                       </Button>
                     </DialogFooter>
                   </form>
@@ -299,18 +313,18 @@ export function MemberDetailPage(): JSX.Element {
       {/* Transactions */}
       <Card>
         <CardHeader>
-          <CardTitle>Transaction History</CardTitle>
+          <CardTitle>{uiText("interface.transactionHistory")}</CardTitle>
         </CardHeader>
         <CardContent>
           {txsLoading ? (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Type</TableHead>
-                  <TableHead>Amount</TableHead>
-                  <TableHead>Balance After</TableHead>
-                  <TableHead>Source</TableHead>
+                  <TableHead>{uiText("common.date")}</TableHead>
+                  <TableHead>{uiText("interface.type")}</TableHead>
+                  <TableHead>{uiText("interface.amount")}</TableHead>
+                  <TableHead>{uiText("interface.balanceAfter")}</TableHead>
+                  <TableHead>{uiText("interface.source")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -337,27 +351,29 @@ export function MemberDetailPage(): JSX.Element {
             </Table>
           ) : !transactions || transactions.items.length === 0 ? (
             <div className="py-8 text-center">
-              <p className="text-muted-foreground">No transactions yet</p>
+              <p className="text-muted-foreground">{uiText("interface.noTransactionsYet")}</p>
             </div>
           ) : (
             <>
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Type</TableHead>
-                    <TableHead>Amount</TableHead>
-                    <TableHead>Balance After</TableHead>
-                    <TableHead>Source</TableHead>
+                    <TableHead>{uiText("common.date")}</TableHead>
+                    <TableHead>{uiText("interface.type")}</TableHead>
+                    <TableHead>{uiText("interface.amount")}</TableHead>
+                    <TableHead>{uiText("interface.balanceAfter")}</TableHead>
+                    <TableHead>{uiText("interface.source")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {transactions.items.map((tx) => (
                     <TableRow key={tx.id}>
-                      <TableCell>{new Date(tx.createdAt).toLocaleDateString()}</TableCell>
+                      <TableCell>
+                        {new Date(tx.createdAt).toLocaleDateString(uiLocale.language)}
+                      </TableCell>
                       <TableCell>
                         <Badge variant={transactionTypeColors[tx.type] ?? "outline"}>
-                          {tx.type}
+                          {translateEnum(tx.type)}
                         </Badge>
                       </TableCell>
                       <TableCell
@@ -370,9 +386,9 @@ export function MemberDetailPage(): JSX.Element {
                         }
                       >
                         {tx.amount > 0 ? "+" : ""}
-                        {tx.amount.toLocaleString()}
+                        {tx.amount.toLocaleString(uiLocale.language)}
                       </TableCell>
-                      <TableCell>{tx.balanceAfter.toLocaleString()}</TableCell>
+                      <TableCell>{tx.balanceAfter.toLocaleString(uiLocale.language)}</TableCell>
                       <TableCell>{tx.source}</TableCell>
                     </TableRow>
                   ))}
@@ -381,7 +397,8 @@ export function MemberDetailPage(): JSX.Element {
 
               <div className="mt-4 flex items-center justify-between">
                 <p className="text-sm text-muted-foreground">
-                  Page {transactions.page} of {transactions.totalPages}
+                  {uiText("interface.page")} {transactions.page} {uiText("interface.of")}{" "}
+                  {transactions.totalPages}
                 </p>
                 <div className="flex gap-2">
                   <Button

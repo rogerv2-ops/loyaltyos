@@ -10,6 +10,7 @@ import type { FastifyInstance } from "fastify";
 import { z } from "zod";
 
 import { prisma } from "../../db.js";
+import { apiCopy } from "../../lib/api-copy.js";
 import { adaptPointsMetrics, getBusinessMetrics } from "../../lib/business-metrics.js";
 
 const pointsMetrics = adaptPointsMetrics(getBusinessMetrics());
@@ -74,9 +75,9 @@ export function adminCampaignsRoutes(app: FastifyInstance, _opts: unknown, done:
       include: { variants: true, applications: true },
     });
     if (!campaign) {
-      return reply
-        .status(404)
-        .send({ error: { code: "NOT_FOUND", message: "Campaign not found" } });
+      return reply.status(404).send({
+        error: { code: "NOT_FOUND", message: apiCopy(request, "apiMessages.campaignNotFound") },
+      });
     }
     return reply.send({ data: campaign });
   });
@@ -90,9 +91,9 @@ export function adminCampaignsRoutes(app: FastifyInstance, _opts: unknown, done:
       where: { id, programId: request.programId },
     });
     if (!owned) {
-      return reply
-        .status(404)
-        .send({ error: { code: "NOT_FOUND", message: "Campaign not found" } });
+      return reply.status(404).send({
+        error: { code: "NOT_FOUND", message: apiCopy(request, "apiMessages.campaignNotFound") },
+      });
     }
 
     const campaign = await campaigns.update(id, body);
@@ -107,9 +108,9 @@ export function adminCampaignsRoutes(app: FastifyInstance, _opts: unknown, done:
       where: { id, programId: request.programId },
     });
     if (!owned) {
-      return reply
-        .status(404)
-        .send({ error: { code: "NOT_FOUND", message: "Campaign not found" } });
+      return reply.status(404).send({
+        error: { code: "NOT_FOUND", message: apiCopy(request, "apiMessages.campaignNotFound") },
+      });
     }
 
     await campaigns.archive(id);
@@ -142,9 +143,9 @@ export function adminCampaignsRoutes(app: FastifyInstance, _opts: unknown, done:
       where: { id, programId: request.programId },
     });
     if (!campaign) {
-      return reply
-        .status(404)
-        .send({ error: { code: "NOT_FOUND", message: "Campaign not found" } });
+      return reply.status(404).send({
+        error: { code: "NOT_FOUND", message: apiCopy(request, "apiMessages.campaignNotFound") },
+      });
     }
 
     const result = await campaigns.estimateImpact({
@@ -165,9 +166,9 @@ export function adminCampaignsRoutes(app: FastifyInstance, _opts: unknown, done:
       where: { id, programId: request.programId },
     });
     if (!owned) {
-      return reply
-        .status(404)
-        .send({ error: { code: "NOT_FOUND", message: "Campaign not found" } });
+      return reply.status(404).send({
+        error: { code: "NOT_FOUND", message: apiCopy(request, "apiMessages.campaignNotFound") },
+      });
     }
 
     switch (action) {

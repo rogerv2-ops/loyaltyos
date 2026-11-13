@@ -18,17 +18,18 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { fetchApi } from "@/lib/api-client";
+import { translateEnum, useUiText } from "@/lib/ui-text";
 import type { CouponDiscountType } from "@/types";
 
 const CHANNELS = ["EMAIL", "SMS", "PUSH", "IN_APP", "WEBHOOK"] as const;
 
 const DISCOUNT_TYPES: { value: CouponDiscountType; label: string }[] = [
-  { value: "PERCENTAGE", label: "Percentage" },
-  { value: "FIXED", label: "Fixed Amount" },
-  { value: "FREE_PRODUCT", label: "Free Product" },
-  { value: "FREE_SHIPPING", label: "Free Shipping" },
-  { value: "EXTRA_POINTS", label: "Extra Points" },
-  { value: "EXPERIENCE", label: "Experience" },
+  { value: "PERCENTAGE", label: "interface.percentage" },
+  { value: "FIXED", label: "interface.fixedAmount" },
+  { value: "FREE_PRODUCT", label: "interface.freeProduct" },
+  { value: "FREE_SHIPPING", label: "interface.freeShipping" },
+  { value: "EXTRA_POINTS", label: "interface.extraPoints" },
+  { value: "EXPERIENCE", label: "interface.experience" },
 ];
 
 const schema = z.object({
@@ -56,6 +57,8 @@ const schema = z.object({
 type FormData = z.infer<typeof schema>;
 
 export function CouponBulkGeneratePage(): JSX.Element {
+  const uiText = useUiText();
+
   const navigate = useNavigate();
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -95,7 +98,7 @@ export function CouponBulkGeneratePage(): JSX.Element {
       });
       setResults(codes);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to generate coupons");
+      setError(err instanceof Error ? err.message : uiText("interface.failedToGenerateCoupons"));
     } finally {
       setSaving(false);
     }
@@ -120,9 +123,9 @@ export function CouponBulkGeneratePage(): JSX.Element {
             navigate("/coupons");
           }}
         >
-          <ArrowLeft className="mr-2 h-4 w-4" /> Back
+          <ArrowLeft className="mr-2 h-4 w-4" /> {uiText("interface.back")}
         </Button>
-        <h1 className="text-3xl font-bold">Bulk Generate Coupons</h1>
+        <h1 className="text-3xl font-bold">{uiText("interface.bulkGenerateCoupons")}</h1>
       </div>
 
       <form
@@ -133,25 +136,31 @@ export function CouponBulkGeneratePage(): JSX.Element {
       >
         <Card>
           <CardHeader>
-            <CardTitle>Generation Settings</CardTitle>
+            <CardTitle>{uiText("interface.generationSettings")}</CardTitle>
             <CardDescription>
-              Configure how many codes to generate and their format.
+              {uiText("interface.configureHowManyCodesToGenerateAndTheirFormat")}
             </CardDescription>
           </CardHeader>
           <CardContent className="grid grid-cols-1 gap-4 md:grid-cols-3">
             <div className="space-y-2">
-              <Label htmlFor="prefix">Code Prefix</Label>
-              <Input id="prefix" {...form.register("prefix")} placeholder="e.g. SUMMER" />
+              <Label htmlFor="prefix">{uiText("interface.codePrefix")}</Label>
+              <Input
+                id="prefix"
+                {...form.register("prefix")}
+                placeholder={uiText("interface.eGSummer")}
+              />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="count">Number of Codes</Label>
+              <Label htmlFor="count">{uiText("interface.numberOfCodes")}</Label>
               <Input id="count" type="number" {...form.register("count")} />
               {form.formState.errors.count && (
-                <p className="text-sm text-destructive">{form.formState.errors.count.message}</p>
+                <p className="text-sm text-destructive">
+                  {uiText(form.formState.errors.count.message)}
+                </p>
               )}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="length">Code Length</Label>
+              <Label htmlFor="length">{uiText("interface.codeLength")}</Label>
               <Input id="length" type="number" {...form.register("length")} placeholder="8" />
             </div>
           </CardContent>
@@ -159,12 +168,14 @@ export function CouponBulkGeneratePage(): JSX.Element {
 
         <Card>
           <CardHeader>
-            <CardTitle>Discount Configuration</CardTitle>
-            <CardDescription>Set the discount type, value, and usage limits.</CardDescription>
+            <CardTitle>{uiText("interface.discountConfiguration")}</CardTitle>
+            <CardDescription>
+              {uiText("interface.setTheDiscountTypeValueAndUsageLimits")}
+            </CardDescription>
           </CardHeader>
           <CardContent className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div className="space-y-2">
-              <Label>Discount Type</Label>
+              <Label>{uiText("interface.discountType")}</Label>
               <Select
                 value={form.watch("discountType")}
                 onValueChange={(v) => {
@@ -177,14 +188,14 @@ export function CouponBulkGeneratePage(): JSX.Element {
                 <SelectContent>
                   {DISCOUNT_TYPES.map((dt) => (
                     <SelectItem key={dt.value} value={dt.value}>
-                      {dt.label}
+                      {uiText(dt.label)}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="discountValue">Discount Value</Label>
+              <Label htmlFor="discountValue">{uiText("interface.discountValue")}</Label>
               <Input
                 id="discountValue"
                 type="number"
@@ -193,7 +204,7 @@ export function CouponBulkGeneratePage(): JSX.Element {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="minPurchase">Minimum Purchase (points)</Label>
+              <Label htmlFor="minPurchase">{uiText("interface.minimumPurchasePoints")}</Label>
               <Input
                 id="minPurchase"
                 type="number"
@@ -202,16 +213,16 @@ export function CouponBulkGeneratePage(): JSX.Element {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="maxUses">Max Uses Per Coupon</Label>
+              <Label htmlFor="maxUses">{uiText("interface.maxUsesPerCoupon")}</Label>
               <Input
                 id="maxUses"
                 type="number"
                 {...form.register("maxUses")}
-                placeholder="Unlimited"
+                placeholder={uiText("interface.unlimited")}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="maxUsesPerMember">Max Uses Per Member</Label>
+              <Label htmlFor="maxUsesPerMember">{uiText("interface.maxUsesPerMember")}</Label>
               <Input
                 id="maxUsesPerMember"
                 type="number"
@@ -220,7 +231,7 @@ export function CouponBulkGeneratePage(): JSX.Element {
               />
             </div>
             <div className="flex items-center justify-between self-end">
-              <Label>Stackable with points</Label>
+              <Label>{uiText("interface.stackableWithPoints")}</Label>
               <input
                 type="checkbox"
                 checked={form.watch("isStackable")}
@@ -235,11 +246,11 @@ export function CouponBulkGeneratePage(): JSX.Element {
 
         <Card>
           <CardHeader>
-            <CardTitle>Channels & Schedule</CardTitle>
+            <CardTitle>{uiText("interface.channelsSchedule")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label>Valid Channels</Label>
+              <Label>{uiText("interface.validChannels")}</Label>
               <div className="flex flex-wrap gap-4">
                 {CHANNELS.map((ch) => (
                   <div key={ch} className="flex items-center gap-2">
@@ -258,18 +269,18 @@ export function CouponBulkGeneratePage(): JSX.Element {
                         }
                       }}
                     />
-                    <Label htmlFor={`gen-ch-${ch}`}>{ch}</Label>
+                    <Label htmlFor={`gen-ch-${ch}`}>{translateEnum(ch)}</Label>
                   </div>
                 ))}
               </div>
             </div>
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="startsAt">Start Date</Label>
+                <Label htmlFor="startsAt">{uiText("interface.startDate")}</Label>
                 <Input id="startsAt" type="datetime-local" {...form.register("startsAt")} />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="expiresAt">Expiry Date</Label>
+                <Label htmlFor="expiresAt">{uiText("interface.expiryDate")}</Label>
                 <Input id="expiresAt" type="datetime-local" {...form.register("expiresAt")} />
               </div>
             </div>
@@ -280,14 +291,17 @@ export function CouponBulkGeneratePage(): JSX.Element {
 
         <Button type="submit" disabled={saving} size="lg">
           <Save className="mr-2 h-4 w-4" />
-          {saving ? "Generating..." : "Generate Coupons"}
+          {saving ? uiText("interface.generating") : uiText("interface.generateCoupons")}
         </Button>
       </form>
 
       {results && (
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle>Generated Codes ({results.length})</CardTitle>
+            <CardTitle>
+              {uiText("interface.generatedCodes")}
+              {results.length})
+            </CardTitle>
             <Button
               variant="outline"
               size="sm"
@@ -297,11 +311,11 @@ export function CouponBulkGeneratePage(): JSX.Element {
             >
               {copied ? (
                 <>
-                  <Check className="mr-2 h-4 w-4" /> Copied
+                  <Check className="mr-2 h-4 w-4" /> {uiText("interface.copied")}
                 </>
               ) : (
                 <>
-                  <Copy className="mr-2 h-4 w-4" /> Copy All
+                  <Copy className="mr-2 h-4 w-4" /> {uiText("interface.copyAll")}
                 </>
               )}
             </Button>

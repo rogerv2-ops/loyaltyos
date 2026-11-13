@@ -41,9 +41,11 @@ vi.mock("../lib/notifications-setup.js", () => ({
 
 import type { FastifyInstance } from "fastify";
 
+import Fastify from "fastify";
+
 import { buildApp } from "../app.js";
 import { LoyaltyError } from "../lib/errors.js";
-import { localizeMessage } from "../lib/error-handler.js";
+import { errorHandler, localizeMessage } from "../lib/error-handler.js";
 
 let app: FastifyInstance;
 
@@ -108,4 +110,25 @@ describe("error envelope — no details leak", () => {
     expect(body.error).toHaveProperty("message");
     expect(body.error).not.toHaveProperty("details");
   });
+});
+
+describe("unknown-code envelope compatibility", () => {
+  it.each(["UNKNOWN_CODE_XYZ", "__proto__", "constructor"])(
+    "preserves code, status and literal fallback for %s",
+    async (code) => {
+      const isolated = Fastify();
+      isolated.setErrorHandler(errorHandler);
+      isolated.get("/fixture", async () => {
+        throw new LoyaltyError(code, 409);
+      });
+      const result = await isolated.inject({
+        method: "GET",
+        url: "/fixture",
+        headers: { "accept-language": "es-MX" },
+      });
+      expect(result.statusCode).toBe(409);
+      expect(result.json()).toEqual({ error: { code, message: code } });
+      await isolated.close();
+    },
+  );
 });

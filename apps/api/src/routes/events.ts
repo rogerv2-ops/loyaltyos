@@ -6,6 +6,7 @@ import type { FastifyInstance } from "fastify";
 import { z } from "zod";
 
 import { prisma } from "../db.js";
+import { apiCopy } from "../lib/api-copy.js";
 import { adaptPointsMetrics, getBusinessMetrics } from "../lib/business-metrics.js";
 import { notificationsService } from "../lib/notifications-setup.js";
 
@@ -63,7 +64,10 @@ export function eventsRoutes(app: FastifyInstance, _opts: unknown, done: () => v
       const idempotencyKey = request.headers["idempotency-key"] as string;
       if (!idempotencyKey) {
         return reply.status(400).send({
-          error: { code: "MISSING_HEADER", message: "Idempotency-Key header is required" },
+          error: {
+            code: "MISSING_HEADER",
+            message: apiCopy(request, "apiMessages.idempotencyRequired"),
+          },
         });
       }
 
@@ -85,9 +89,9 @@ export function eventsRoutes(app: FastifyInstance, _opts: unknown, done: () => v
           where: { id: body.memberId, programId },
         });
         if (!member) {
-          return reply
-            .status(404)
-            .send({ error: { code: "NOT_FOUND", message: "Member not found" } });
+          return reply.status(404).send({
+            error: { code: "NOT_FOUND", message: apiCopy(request, "apiMessages.memberNotFound") },
+          });
         }
       }
 

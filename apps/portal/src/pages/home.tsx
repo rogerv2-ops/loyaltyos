@@ -8,17 +8,17 @@ import { isAuthenticated } from "../lib/auth";
 import type { BadgeProgress, Balance, Reward, TierStatus } from "../types";
 
 function BalanceCard({ balance }: { balance: Balance }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   return (
     <div className="rounded-2xl bg-[var(--color-primary)] p-6 text-white shadow-lg">
       <p className="text-sm font-medium opacity-80">{t("balance")}</p>
-      <p className="mt-1 text-4xl font-bold">{balance.total.toLocaleString()}</p>
+      <p className="mt-1 text-4xl font-bold">{balance.total.toLocaleString(i18n.language)}</p>
       <div className="mt-3 flex gap-4 text-xs opacity-75">
         <span>
-          {t("confirmed")}: {balance.confirmed.toLocaleString()}
+          {t("confirmed")}: {balance.confirmed.toLocaleString(i18n.language)}
         </span>
         <span>
-          {t("pending")}: {balance.pending.toLocaleString()}
+          {t("pending")}: {balance.pending.toLocaleString(i18n.language)}
         </span>
       </div>
     </div>
@@ -26,7 +26,7 @@ function BalanceCard({ balance }: { balance: Balance }) {
 }
 
 function TierCard({ tier }: { tier: TierStatus }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   if (!tier.currentTier) return null;
   return (
     <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-secondary)] p-4">
@@ -48,7 +48,8 @@ function TierCard({ tier }: { tier: TierStatus }) {
           <div className="flex justify-between text-xs text-[var(--color-text-secondary)]">
             <span>{t("progress")}</span>
             <span>
-              {tier.pointsProgress.toLocaleString()} / {tier.nextTier.minPoints.toLocaleString()}
+              {tier.pointsProgress.toLocaleString(i18n.language)} /{" "}
+              {tier.nextTier.minPoints.toLocaleString(i18n.language)}
             </span>
           </div>
           <div className="mt-1 h-2 overflow-hidden rounded-full bg-[var(--color-border)]">
@@ -60,7 +61,7 @@ function TierCard({ tier }: { tier: TierStatus }) {
             />
           </div>
           <p className="mt-1 text-xs text-[var(--color-text-secondary)]">
-            {tier.pointsToNext?.toLocaleString()} {t("pointsToNext")}
+            {tier.pointsToNext?.toLocaleString(i18n.language)} {t("pointsToNext")}
           </p>
         </div>
       ) : (

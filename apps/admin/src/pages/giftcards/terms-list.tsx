@@ -1,5 +1,4 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { format } from "date-fns";
 import { ArrowLeft, Pencil, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -30,6 +29,7 @@ import {
 } from "@/components/ui/table";
 import { usePermission } from "@/lib/access";
 import { fetchApi } from "@/lib/api-client";
+import { formatUiDate as format } from "@/lib/ui-text";
 import type { TermsTemplate } from "@/types";
 
 const LOCALE_LABELS: Record<string, string> = {

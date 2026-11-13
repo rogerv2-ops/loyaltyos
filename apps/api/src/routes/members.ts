@@ -6,6 +6,7 @@ import type { FastifyInstance, FastifyReply } from "fastify";
 import { z } from "zod";
 
 import { prisma } from "../db.js";
+import { apiCopy } from "../lib/api-copy.js";
 import { audit } from "../lib/audit.js";
 import { adaptPointsMetrics, getBusinessMetrics } from "../lib/business-metrics.js";
 import { LoyaltyError } from "../lib/errors.js";
@@ -163,7 +164,10 @@ export function membersRoutes(app: FastifyInstance, _opts: unknown, done: () => 
     const memberId = request.memberId;
     if (!memberId) {
       return reply.status(401).send({
-        error: { code: "UNAUTHORIZED", message: "Authentication required" },
+        error: {
+          code: "UNAUTHORIZED",
+          message: apiCopy(request, "apiMessages.authenticationRequired"),
+        },
       });
     }
 
@@ -171,7 +175,9 @@ export function membersRoutes(app: FastifyInstance, _opts: unknown, done: () => 
       where: { id: memberId, deletedAt: null },
     });
     if (!member) {
-      return reply.status(404).send({ error: { code: "NOT_FOUND", message: "Member not found" } });
+      return reply.status(404).send({
+        error: { code: "NOT_FOUND", message: apiCopy(request, "apiMessages.memberNotFound") },
+      });
     }
     return reply.send({ data: member });
   });
@@ -221,7 +227,9 @@ export function membersRoutes(app: FastifyInstance, _opts: unknown, done: () => 
       where: { id, programId: request.programId },
     });
     if (!member) {
-      return reply.status(404).send({ error: { code: "NOT_FOUND", message: "Member not found" } });
+      return reply.status(404).send({
+        error: { code: "NOT_FOUND", message: apiCopy(request, "apiMessages.memberNotFound") },
+      });
     }
     return reply.send({ data: member });
   });
@@ -250,7 +258,9 @@ export function membersRoutes(app: FastifyInstance, _opts: unknown, done: () => 
       where: { id, programId: request.programId },
     });
     if (!existing) {
-      return reply.status(404).send({ error: { code: "NOT_FOUND", message: "Member not found" } });
+      return reply.status(404).send({
+        error: { code: "NOT_FOUND", message: apiCopy(request, "apiMessages.memberNotFound") },
+      });
     }
 
     const member = await prisma.member.update({
@@ -264,9 +274,12 @@ export function membersRoutes(app: FastifyInstance, _opts: unknown, done: () => 
   app.get("/members/me/balance", async (request, reply) => {
     const memberId = request.memberId;
     if (!memberId) {
-      return reply
-        .status(401)
-        .send({ error: { code: "UNAUTHORIZED", message: "Authentication required" } });
+      return reply.status(401).send({
+        error: {
+          code: "UNAUTHORIZED",
+          message: apiCopy(request, "apiMessages.authenticationRequired"),
+        },
+      });
     }
     const result = await points.balance(memberId, request.programId);
     return reply.send({ data: result });
@@ -276,9 +289,12 @@ export function membersRoutes(app: FastifyInstance, _opts: unknown, done: () => 
   app.get("/members/me/transactions", async (request, reply) => {
     const memberId = request.memberId;
     if (!memberId) {
-      return reply
-        .status(401)
-        .send({ error: { code: "UNAUTHORIZED", message: "Authentication required" } });
+      return reply.status(401).send({
+        error: {
+          code: "UNAUTHORIZED",
+          message: apiCopy(request, "apiMessages.authenticationRequired"),
+        },
+      });
     }
     const query = z
       .object({
@@ -299,9 +315,12 @@ export function membersRoutes(app: FastifyInstance, _opts: unknown, done: () => 
   app.get("/members/me/badges", async (request, reply) => {
     const memberId = request.memberId;
     if (!memberId) {
-      return reply
-        .status(401)
-        .send({ error: { code: "UNAUTHORIZED", message: "Authentication required" } });
+      return reply.status(401).send({
+        error: {
+          code: "UNAUTHORIZED",
+          message: apiCopy(request, "apiMessages.authenticationRequired"),
+        },
+      });
     }
     const result = await badges.getMemberBadges(memberId);
     return reply.send({ data: result });
@@ -311,9 +330,12 @@ export function membersRoutes(app: FastifyInstance, _opts: unknown, done: () => 
   app.get("/members/me/tier", async (request, reply) => {
     const memberId = request.memberId;
     if (!memberId) {
-      return reply
-        .status(401)
-        .send({ error: { code: "UNAUTHORIZED", message: "Authentication required" } });
+      return reply.status(401).send({
+        error: {
+          code: "UNAUTHORIZED",
+          message: apiCopy(request, "apiMessages.authenticationRequired"),
+        },
+      });
     }
     const result = await tiers.getMemberTier(memberId, request.programId);
     return reply.send({ data: result });
@@ -346,7 +368,10 @@ export function membersRoutes(app: FastifyInstance, _opts: unknown, done: () => 
       const idempotencyKey = request.headers["idempotency-key"] as string;
       if (!idempotencyKey) {
         return reply.status(400).send({
-          error: { code: "MISSING_HEADER", message: "Idempotency-Key header is required" },
+          error: {
+            code: "MISSING_HEADER",
+            message: apiCopy(request, "apiMessages.idempotencyRequired"),
+          },
         });
       }
 
@@ -386,9 +411,9 @@ export function membersRoutes(app: FastifyInstance, _opts: unknown, done: () => 
         where: { id, programId: request.programId, deletedAt: null },
       });
       if (!member) {
-        return reply
-          .status(404)
-          .send({ error: { code: "NOT_FOUND", message: "Member not found" } });
+        return reply.status(404).send({
+          error: { code: "NOT_FOUND", message: apiCopy(request, "apiMessages.memberNotFound") },
+        });
       }
 
       const program = await prisma.program.findUniqueOrThrow({
@@ -582,7 +607,9 @@ export function membersRoutes(app: FastifyInstance, _opts: unknown, done: () => 
       where: { id: deviceId, memberId: id },
     });
     if (!device) {
-      return reply.status(404).send({ error: { code: "NOT_FOUND", message: "Device not found" } });
+      return reply.status(404).send({
+        error: { code: "NOT_FOUND", message: apiCopy(request, "apiMessages.deviceNotFound") },
+      });
     }
 
     await prisma.memberDevice.delete({ where: { id: deviceId } });
@@ -635,7 +662,9 @@ export function membersRoutes(app: FastifyInstance, _opts: unknown, done: () => 
       where: { id, programId: request.programId, deletedAt: null },
     });
     if (!member) {
-      return reply.status(404).send({ error: { code: "NOT_FOUND", message: "Member not found" } });
+      return reply.status(404).send({
+        error: { code: "NOT_FOUND", message: apiCopy(request, "apiMessages.memberNotFound") },
+      });
     }
 
     const ttlSeconds = body.ttlSeconds ?? MEMBER_TOKEN_DEFAULT_TTL_SECONDS;
@@ -666,7 +695,9 @@ export function membersRoutes(app: FastifyInstance, _opts: unknown, done: () => 
       where: { id, programId: request.programId, deletedAt: null },
     });
     if (!member) {
-      return reply.status(404).send({ error: { code: "NOT_FOUND", message: "Member not found" } });
+      return reply.status(404).send({
+        error: { code: "NOT_FOUND", message: apiCopy(request, "apiMessages.memberNotFound") },
+      });
     }
 
     const now = new Date();

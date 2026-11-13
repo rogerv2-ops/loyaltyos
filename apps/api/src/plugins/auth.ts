@@ -7,6 +7,7 @@ import type { FastifyInstance } from "fastify";
 import fp from "fastify-plugin";
 
 import { prisma } from "../db.js";
+import { apiCopy } from "../lib/api-copy.js";
 import type { AuditActor } from "../lib/audit.js";
 import { adminLucia } from "../lib/auth/admin-lucia.js";
 import { lucia } from "../lib/auth/lucia.js";
@@ -68,7 +69,10 @@ async function authPluginImpl(app: FastifyInstance): Promise<void> {
           // the 404 route context, where `routeOptions.url` is undefined and the
           // request would fall through to the API-key check and return 401.
           return reply.code(404).send({
-            message: `Route ${request.method}:${request.url} not found`,
+            message: apiCopy(request, "apiMessages.routeNotFound", {
+              method: request.method,
+              url: request.url,
+            }),
             error: "Not Found",
             statusCode: 404,
           });

@@ -1,5 +1,4 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { format } from "date-fns";
 import { ArrowLeft, Search, XCircle } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -37,8 +36,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import uiLocale from "@/i18n";
 import { usePermission } from "@/lib/access";
 import { fetchApi } from "@/lib/api-client";
+import { formatUiDate as format, translateEnum, useUiText } from "@/lib/ui-text";
 import type { GiftCard, GiftCardTransaction, PaginatedResponse } from "@/types";
 
 const STATUS_COLORS: Record<string, string> = {
@@ -49,6 +50,8 @@ const STATUS_COLORS: Record<string, string> = {
 };
 
 export function CardDetailPage(): JSX.Element {
+  const uiText = useUiText();
+
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
@@ -128,7 +131,7 @@ export function CardDetailPage(): JSX.Element {
         void queryClient.invalidateQueries({ queryKey: ["giftcard-transactions", cardId] });
       })
       .catch((err: unknown) => {
-        setActionError(err instanceof Error ? err.message : "Redeem failed");
+        setActionError(err instanceof Error ? err.message : uiText("interface.redeemFailed"));
       })
       .finally(() => {
         setSubmitting(false);
@@ -157,7 +160,7 @@ export function CardDetailPage(): JSX.Element {
         void queryClient.invalidateQueries({ queryKey: ["giftcard-transactions", cardId] });
       })
       .catch((err: unknown) => {
-        setActionError(err instanceof Error ? err.message : "Refund failed");
+        setActionError(err instanceof Error ? err.message : uiText("interface.refundFailed"));
       })
       .finally(() => {
         setSubmitting(false);
@@ -177,7 +180,7 @@ export function CardDetailPage(): JSX.Element {
         void queryClient.invalidateQueries({ queryKey: ["giftcard-detail", cardId] });
       })
       .catch((err: unknown) => {
-        setActionError(err instanceof Error ? err.message : "Cancel failed");
+        setActionError(err instanceof Error ? err.message : uiText("interface.cancelFailed"));
       })
       .finally(() => {
         setSubmitting(false);
@@ -255,7 +258,7 @@ export function CardDetailPage(): JSX.Element {
                 <CardTitle className="font-mono text-2xl">{card.code}</CardTitle>
               </div>
               <Badge className={STATUS_COLORS[card.status] ?? ""}>
-                {t(`giftcards.status.${card.status}`)}
+                {t(`giftcards.status.${card.status}`, { defaultValue: t("common.unknown") })}
               </Badge>
             </CardHeader>
             <CardContent>
@@ -263,13 +266,13 @@ export function CardDetailPage(): JSX.Element {
                 <div>
                   <p className="text-sm text-muted-foreground">{t("giftcards.balance")}</p>
                   <p className="text-xl font-bold">
-                    {card.balance.toLocaleString()} {card.currency}
+                    {card.balance.toLocaleString(uiLocale.language)} {card.currency}
                   </p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">{t("giftcards.initialAmount")}</p>
                   <p className="text-xl font-bold">
-                    {card.initialAmount.toLocaleString()} {card.currency}
+                    {card.initialAmount.toLocaleString(uiLocale.language)} {card.currency}
                   </p>
                 </div>
                 <div>
@@ -357,11 +360,13 @@ export function CardDetailPage(): JSX.Element {
                             {format(new Date(tx.createdAt), "PPp")}
                           </TableCell>
                           <TableCell>
-                            <Badge variant="outline">{tx.type}</Badge>
+                            <Badge variant="outline">{translateEnum(tx.type)}</Badge>
                           </TableCell>
-                          <TableCell className="text-right">{tx.amount.toLocaleString()}</TableCell>
                           <TableCell className="text-right">
-                            {tx.balanceAfter.toLocaleString()}
+                            {tx.amount.toLocaleString(uiLocale.language)}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            {tx.balanceAfter.toLocaleString(uiLocale.language)}
                           </TableCell>
                           <TableCell className="text-sm text-muted-foreground">
                             {tx.orderRef ?? tx.idempotencyKey ?? "-"}

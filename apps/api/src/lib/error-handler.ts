@@ -46,7 +46,7 @@ import {
   TermsTemplateNotFoundError,
 } from "@loyaltyos/giftcards";
 import type { SupportedLocale } from "@loyaltyos/i18n";
-import { resolveLocale } from "@loyaltyos/i18n";
+import { localizedValidation, resolveLocale } from "@loyaltyos/i18n";
 import enUS from "@loyaltyos/i18n/src/locales/en-US.json" with { type: "json" };
 import esMX from "@loyaltyos/i18n/src/locales/es-MX.json" with { type: "json" };
 import {
@@ -129,7 +129,10 @@ function mapError(
         error: {
           code: "VALIDATION_ERROR",
           message: localizeMessage("VALIDATION_ERROR", locale),
-          details: err.errors,
+          details: err.errors.map((issue) => ({
+            ...issue,
+            message: localizedValidation(issue, locale),
+          })),
         },
       },
     };

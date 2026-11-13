@@ -1,6 +1,7 @@
 import { AlertTriangle, Check, MessageSquare, Sparkles, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
+import { useUiText } from "../../lib/ui-text";
 import { cn } from "../../lib/utils";
 import { Button } from "../ui/button";
 import { Card } from "../ui/card";
@@ -13,13 +14,15 @@ const ENABLED: boolean =
   (import.meta.env.VITE_AI_COMPANION_ENABLED as string | undefined) === "true";
 
 const SUGGESTED_PROMPTS = [
-  "¿Cómo está el programa esta semana?",
-  "Crea una campaña de puntos dobles para este fin de semana",
-  "Busca los 10 miembros con mayor saldo",
-  "¿Cuántos clientes llevan más de 60 días sin comprar?",
+  "aiUi.promptWeek",
+  "aiUi.promptCampaign",
+  "aiUi.promptMembers",
+  "aiUi.promptInactive",
 ];
 
 export function AICompanion(): JSX.Element | null {
+  const uiText = useUiText();
+
   const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState("");
 
@@ -84,7 +87,7 @@ export function AICompanion(): JSX.Element | null {
           "hover:scale-105 active:scale-95",
           isOpen && "rotate-90",
         )}
-        aria-label={isOpen ? "Cerrar chat" : "Abrir chat"}
+        aria-label={isOpen ? uiText("aiUi.closeChat") : uiText("aiUi.openChat")}
       >
         {isOpen ? <X className="h-6 w-6" /> : <Sparkles className="h-6 w-6" />}
       </button>
@@ -102,9 +105,9 @@ export function AICompanion(): JSX.Element | null {
           <div className="flex items-center gap-2">
             <Sparkles className="h-5 w-5 text-primary" />
             <div>
-              <h2 className="text-sm font-semibold">LoyaltyOS Assistant</h2>
+              <h2 className="text-sm font-semibold">{uiText("interface.loyaltyosAssistant")}</h2>
               <p className="text-xs text-muted-foreground">
-                {isStreaming ? "Escribiendo..." : "En línea"}
+                {isStreaming ? uiText("aiUi.writing") : uiText("aiUi.online")}
               </p>
             </div>
           </div>
@@ -115,7 +118,7 @@ export function AICompanion(): JSX.Element | null {
                 size="icon"
                 className="h-8 w-8"
                 onClick={clearHistory}
-                title="Limpiar historial"
+                title={uiText("aiUi.clearHistory")}
               >
                 <X className="h-4 w-4" />
               </Button>
@@ -131,24 +134,23 @@ export function AICompanion(): JSX.Element | null {
                 <MessageSquare className="h-8 w-8 text-primary" />
               </div>
               <div>
-                <h3 className="text-lg font-semibold">LoyaltyOS Assistant</h3>
+                <h3 className="text-lg font-semibold">{uiText("interface.loyaltyosAssistant")}</h3>
                 <p className="text-sm text-muted-foreground mt-1 max-w-xs">
-                  Pregúntame sobre tu programa de fidelización. Puedo analizar datos, crear campañas
-                  y ayudarte a optimizar resultados.
+                  {uiText("aiUi.intro")}
                 </p>
               </div>
               <div className="grid gap-2 w-full max-w-xs">
                 {SUGGESTED_PROMPTS.map((prompt) => (
                   <Button
-                    key={prompt}
+                    key={uiText(prompt)}
                     variant="outline"
                     size="sm"
                     className="text-xs h-auto py-2 px-3 justify-start text-left font-normal"
                     onClick={() => {
-                      handleSuggestedPrompt(prompt);
+                      handleSuggestedPrompt(uiText(prompt));
                     }}
                   >
-                    {prompt}
+                    {uiText(prompt)}
                   </Button>
                 ))}
               </div>
@@ -190,7 +192,7 @@ export function AICompanion(): JSX.Element | null {
                 setInput(e.target.value);
               }}
               onKeyDown={handleKeyDown}
-              placeholder="Pregunta sobre tu programa..."
+              placeholder={uiText("aiUi.placeholder")}
               className="min-h-[44px] max-h-[120px] resize-none text-sm"
               rows={1}
               disabled={isStreaming}
@@ -205,7 +207,7 @@ export function AICompanion(): JSX.Element | null {
             </Button>
           </div>
           <p className="text-xs text-muted-foreground mt-2 text-center">
-            {isStreaming ? "Procesando..." : "Cmd+Enter para enviar"}
+            {isStreaming ? uiText("aiUi.processing") : uiText("aiUi.sendShortcut")}
           </p>
         </div>
       </div>
@@ -232,27 +234,27 @@ function ConfirmationCard({
   onConfirm: () => void;
   onCancel: () => void;
 }): JSX.Element {
+  const uiText = useUiText();
   return (
     <div className="border-t bg-yellow-50 dark:bg-yellow-950/20 p-4">
       <Card className="p-4 border-yellow-300 dark:border-yellow-800">
         <div className="flex items-start gap-3 mb-3">
           <AlertTriangle className="h-5 w-5 text-yellow-600 dark:text-yellow-400 shrink-0 mt-0.5" />
           <div>
-            <p className="text-sm font-semibold">Confirmar acción</p>
+            <p className="text-sm font-semibold">{uiText("aiUi.confirmAction")}</p>
             <p className="text-xs text-muted-foreground mt-1">
-              Se ejecutará <strong>{confirmation.toolName}</strong> con los parámetros
-              proporcionados. Esta acción no se puede deshacer automáticamente.
+              {uiText("aiUi.confirmation", { tool: confirmation.toolName })}
             </p>
           </div>
         </div>
         <div className="flex gap-2 justify-end">
           <Button variant="outline" size="sm" onClick={onCancel}>
             <X className="h-3.5 w-3.5 mr-1" />
-            Cancelar
+            {uiText("common.cancel")}
           </Button>
           <Button size="sm" onClick={onConfirm}>
             <Check className="h-3.5 w-3.5 mr-1" />
-            Confirmar
+            {uiText("common.confirm")}
           </Button>
         </div>
       </Card>

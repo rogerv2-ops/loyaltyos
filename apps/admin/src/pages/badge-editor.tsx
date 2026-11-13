@@ -21,9 +21,10 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { fetchApi } from "@/lib/api-client";
+import { translateEnum, useUiText } from "@/lib/ui-text";
 
 const badgeSchema = z.object({
-  name: z.string().min(1, "Name is required"),
+  name: z.string().min(1, "interface.nameIsRequired"),
   description: z.string().optional(),
   type: z.enum(["ACHIEVEMENT", "STATUS", "TEMPORAL", "COLLECTIBLE", "SOCIAL"]),
   imageUrl: z.string().optional(),
@@ -49,14 +50,28 @@ interface BadgeDetail {
 }
 
 const BADGE_TYPES = [
-  { value: "ACHIEVEMENT", label: "Achievement", desc: "Unlocked by meeting specific criteria" },
-  { value: "STATUS", label: "Status", desc: "Reflects a member's current status" },
-  { value: "TEMPORAL", label: "Temporal", desc: "Available for a limited time" },
-  { value: "COLLECTIBLE", label: "Collectible", desc: "Part of a collectible series" },
-  { value: "SOCIAL", label: "Social", desc: "Earned through social or community actions" },
+  {
+    value: "ACHIEVEMENT",
+    label: "interface.achievement",
+    desc: "interface.unlockedByMeetingSpecificCriteria",
+  },
+  { value: "STATUS", label: "common.status", desc: "interface.reflectsAMemberSCurrentStatus" },
+  { value: "TEMPORAL", label: "interface.temporal", desc: "interface.availableForALimitedTime" },
+  {
+    value: "COLLECTIBLE",
+    label: "interface.collectible",
+    desc: "interface.partOfACollectibleSeries",
+  },
+  {
+    value: "SOCIAL",
+    label: "interface.social",
+    desc: "interface.earnedThroughSocialOrCommunityActions",
+  },
 ];
 
 export function BadgeEditorPage(): JSX.Element {
+  const uiText = useUiText();
+
   const { id } = useParams<{ id: string }>();
   const isEditing = Boolean(id);
   const navigate = useNavigate();
@@ -138,7 +153,9 @@ export function BadgeEditorPage(): JSX.Element {
         >
           <ArrowLeft className="h-5 w-5" />
         </Button>
-        <h1 className="text-3xl font-bold">{isEditing ? "Edit Badge" : "New Badge"}</h1>
+        <h1 className="text-3xl font-bold">
+          {isEditing ? uiText("interface.editBadge") : uiText("interface.newBadge")}
+        </h1>
       </div>
 
       {isEditing && isLoading ? (
@@ -156,22 +173,30 @@ export function BadgeEditorPage(): JSX.Element {
         >
           <Card>
             <CardHeader>
-              <CardTitle>Badge Details</CardTitle>
-              <CardDescription>Configure the badge name, type, and appearance.</CardDescription>
+              <CardTitle>{uiText("interface.badgeDetails")}</CardTitle>
+              <CardDescription>
+                {uiText("interface.configureTheBadgeNameTypeAndAppearance")}
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="name">Name *</Label>
-                  <Input id="name" {...form.register("name")} placeholder="e.g. First Purchase" />
+                  <Label htmlFor="name">{uiText("interface.name2")}</Label>
+                  <Input
+                    id="name"
+                    {...form.register("name")}
+                    placeholder={uiText("interface.eGFirstPurchase")}
+                  />
                   {form.formState.errors.name && (
-                    <p className="text-xs text-destructive">{form.formState.errors.name.message}</p>
+                    <p className="text-xs text-destructive">
+                      {uiText(form.formState.errors.name.message)}
+                    </p>
                   )}
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="type">Type *</Label>
+                  <Label htmlFor="type">{uiText("interface.type2")}</Label>
                   <Select
-                    value={form.watch("type")}
+                    value={translateEnum(form.watch("type"))}
                     onValueChange={(v) => {
                       form.setValue("type", v as BadgeFormData["type"]);
                     }}
@@ -182,7 +207,7 @@ export function BadgeEditorPage(): JSX.Element {
                     <SelectContent>
                       {BADGE_TYPES.map((bt) => (
                         <SelectItem key={bt.value} value={bt.value}>
-                          {bt.label}
+                          {uiText(bt.label)}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -190,31 +215,31 @@ export function BadgeEditorPage(): JSX.Element {
                 </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="description">Description</Label>
+                <Label htmlFor="description">{uiText("common.description")}</Label>
                 <Textarea
                   id="description"
                   {...form.register("description")}
-                  placeholder="Brief description of this badge"
+                  placeholder={uiText("interface.briefDescriptionOfThisBadge")}
                   rows={2}
                 />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="imageUrl">Image URL</Label>
+                  <Label htmlFor="imageUrl">{uiText("interface.imageUrl")}</Label>
                   <Input id="imageUrl" {...form.register("imageUrl")} placeholder="https://..." />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="seriesId">Series ID</Label>
+                  <Label htmlFor="seriesId">{uiText("interface.seriesId")}</Label>
                   <Input
                     id="seriesId"
                     {...form.register("seriesId")}
-                    placeholder="e.g. mega-saver"
+                    placeholder={uiText("interface.eGMegaSaver")}
                   />
                 </div>
               </div>
               {form.watch("seriesId") && (
                 <div className="space-y-2">
-                  <Label htmlFor="seriesPosition">Series Position</Label>
+                  <Label htmlFor="seriesPosition">{uiText("interface.seriesPosition")}</Label>
                   <Input
                     id="seriesPosition"
                     type="number"
@@ -228,15 +253,14 @@ export function BadgeEditorPage(): JSX.Element {
 
           <Card>
             <CardHeader>
-              <CardTitle>Conditions</CardTitle>
+              <CardTitle>{uiText("interface.conditions")}</CardTitle>
               <CardDescription>
-                Define rules for when this badge is awarded. Uses the same rule format as Segments.
-                Leave empty for manually-awarded badges.
+                {uiText("interface.defineRulesForWhenThisBadgeIsAwardedUsesTheSameRule")}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="conditions">Rules (JSON)</Label>
+                <Label htmlFor="conditions">{uiText("interface.rulesJson")}</Label>
                 <Textarea
                   id="conditions"
                   {...form.register("conditions")}
@@ -253,7 +277,7 @@ export function BadgeEditorPage(): JSX.Element {
                       form.setValue("isActive", v);
                     }}
                   />
-                  <Label>Active</Label>
+                  <Label>{uiText("common.active")}</Label>
                 </div>
               )}
             </CardContent>
@@ -261,7 +285,7 @@ export function BadgeEditorPage(): JSX.Element {
 
           <Card>
             <CardHeader>
-              <CardTitle>Preview</CardTitle>
+              <CardTitle>{uiText("interface.preview")}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex items-center gap-4 rounded-lg border p-6">
@@ -275,14 +299,19 @@ export function BadgeEditorPage(): JSX.Element {
                   <Award className="h-16 w-16 text-muted-foreground" />
                 )}
                 <div>
-                  <p className="text-lg font-semibold">{form.watch("name") || "Badge Name"}</p>
+                  <p className="text-lg font-semibold">
+                    {form.watch("name") || uiText("interface.badgeName")}
+                  </p>
                   <p className="text-sm text-muted-foreground">
-                    {form.watch("description") ?? "No description"}
+                    {form.watch("description") ?? uiText("interface.noDescription")}
                   </p>
                   <p className="mt-1 text-xs text-muted-foreground">
-                    Type: {form.watch("type")}
+                    {uiText("interface.type3")} {translateEnum(form.watch("type"))}
                     {form.watch("seriesId") &&
-                      ` · Series: ${String(form.watch("seriesId"))} #${String(form.watch("seriesPosition") ?? "-")}`}
+                      uiText("interface.seriesDetails", {
+                        id: String(form.watch("seriesId")),
+                        position: String(form.watch("seriesPosition") ?? "-"),
+                      })}
                   </p>
                 </div>
               </div>
@@ -292,7 +321,7 @@ export function BadgeEditorPage(): JSX.Element {
           <div className="flex gap-2">
             <Button type="submit">
               <Save className="mr-2 h-4 w-4" />
-              {isEditing ? "Update Badge" : "Create Badge"}
+              {isEditing ? uiText("interface.updateBadge") : uiText("interface.createBadge")}
             </Button>
             <Button
               type="button"
@@ -301,7 +330,7 @@ export function BadgeEditorPage(): JSX.Element {
                 navigate("/badges");
               }}
             >
-              Cancel
+              {uiText("common.cancel")}
             </Button>
           </div>
         </form>

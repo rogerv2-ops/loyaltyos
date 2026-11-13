@@ -3,6 +3,7 @@ import type { FastifyInstance } from "fastify";
 import { z } from "zod";
 
 import { prisma } from "../../db.js";
+import { apiCopy } from "../../lib/api-copy.js";
 
 const badges = new BadgesService(prisma);
 
@@ -77,7 +78,9 @@ export function adminBadgesRoutes(app: FastifyInstance, _opts: unknown, done: ()
     const { id } = z.object({ id: z.string() }).parse(request.params);
     const owned = await prisma.badge.findFirst({ where: { id, programId: request.programId } });
     if (!owned) {
-      return reply.status(404).send({ error: { code: "NOT_FOUND", message: "Badge not found" } });
+      return reply.status(404).send({
+        error: { code: "NOT_FOUND", message: apiCopy(request, "apiMessages.badgeNotFound") },
+      });
     }
     const badge = await badges.getById(id);
     return reply.send({ data: badge });
@@ -90,7 +93,9 @@ export function adminBadgesRoutes(app: FastifyInstance, _opts: unknown, done: ()
 
     const owned = await prisma.badge.findFirst({ where: { id, programId: request.programId } });
     if (!owned) {
-      return reply.status(404).send({ error: { code: "NOT_FOUND", message: "Badge not found" } });
+      return reply.status(404).send({
+        error: { code: "NOT_FOUND", message: apiCopy(request, "apiMessages.badgeNotFound") },
+      });
     }
 
     const badge = await badges.update(id, body);
@@ -103,7 +108,9 @@ export function adminBadgesRoutes(app: FastifyInstance, _opts: unknown, done: ()
 
     const owned = await prisma.badge.findFirst({ where: { id, programId: request.programId } });
     if (!owned) {
-      return reply.status(404).send({ error: { code: "NOT_FOUND", message: "Badge not found" } });
+      return reply.status(404).send({
+        error: { code: "NOT_FOUND", message: apiCopy(request, "apiMessages.badgeNotFound") },
+      });
     }
 
     await badges.delete(id);

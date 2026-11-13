@@ -2,6 +2,7 @@ import type { FastifyInstance } from "fastify";
 import { z } from "zod";
 
 import { prisma } from "../db.js";
+import { apiCopy } from "../lib/api-copy.js";
 import { coalitionService, getCachedExternalBalance } from "../lib/coalition-setup.js";
 
 // ── Schemas ────────────────────────────────────────────────────────
@@ -46,7 +47,10 @@ export function coalitionRoutes(app: FastifyInstance, _opts: unknown, done: () =
       const idempotencyKey = request.headers["idempotency-key"] as string;
       if (!idempotencyKey) {
         return reply.status(400).send({
-          error: { code: "MISSING_HEADER", message: "Idempotency-Key header is required" },
+          error: {
+            code: "MISSING_HEADER",
+            message: apiCopy(request, "apiMessages.idempotencyRequired"),
+          },
         });
       }
 
@@ -57,9 +61,9 @@ export function coalitionRoutes(app: FastifyInstance, _opts: unknown, done: () =
         where: { id: body.memberId, programId },
       });
       if (!member) {
-        return reply
-          .status(404)
-          .send({ error: { code: "NOT_FOUND", message: "Member not found" } });
+        return reply.status(404).send({
+          error: { code: "NOT_FOUND", message: apiCopy(request, "apiMessages.memberNotFound") },
+        });
       }
 
       const result = await coalitionService.accumulate({
@@ -84,7 +88,10 @@ export function coalitionRoutes(app: FastifyInstance, _opts: unknown, done: () =
       const idempotencyKey = request.headers["idempotency-key"] as string;
       if (!idempotencyKey) {
         return reply.status(400).send({
-          error: { code: "MISSING_HEADER", message: "Idempotency-Key header is required" },
+          error: {
+            code: "MISSING_HEADER",
+            message: apiCopy(request, "apiMessages.idempotencyRequired"),
+          },
         });
       }
 
@@ -95,9 +102,9 @@ export function coalitionRoutes(app: FastifyInstance, _opts: unknown, done: () =
         where: { id: body.memberId, programId },
       });
       if (!member) {
-        return reply
-          .status(404)
-          .send({ error: { code: "NOT_FOUND", message: "Member not found" } });
+        return reply.status(404).send({
+          error: { code: "NOT_FOUND", message: apiCopy(request, "apiMessages.memberNotFound") },
+        });
       }
 
       const result = await coalitionService.redeem({
@@ -122,7 +129,10 @@ export function coalitionRoutes(app: FastifyInstance, _opts: unknown, done: () =
       const idempotencyKey = request.headers["idempotency-key"] as string;
       if (!idempotencyKey) {
         return reply.status(400).send({
-          error: { code: "MISSING_HEADER", message: "Idempotency-Key header is required" },
+          error: {
+            code: "MISSING_HEADER",
+            message: apiCopy(request, "apiMessages.idempotencyRequired"),
+          },
         });
       }
 
@@ -133,9 +143,9 @@ export function coalitionRoutes(app: FastifyInstance, _opts: unknown, done: () =
         where: { id: body.memberId, programId },
       });
       if (!member) {
-        return reply
-          .status(404)
-          .send({ error: { code: "NOT_FOUND", message: "Member not found" } });
+        return reply.status(404).send({
+          error: { code: "NOT_FOUND", message: apiCopy(request, "apiMessages.memberNotFound") },
+        });
       }
 
       const result = await coalitionService.convert({
@@ -156,7 +166,10 @@ export function coalitionRoutes(app: FastifyInstance, _opts: unknown, done: () =
     const idempotencyKey = request.headers["idempotency-key"] as string;
     if (!idempotencyKey) {
       return reply.status(400).send({
-        error: { code: "MISSING_HEADER", message: "Idempotency-Key header is required" },
+        error: {
+          code: "MISSING_HEADER",
+          message: apiCopy(request, "apiMessages.idempotencyRequired"),
+        },
       });
     }
 
@@ -168,9 +181,12 @@ export function coalitionRoutes(app: FastifyInstance, _opts: unknown, done: () =
       where: { localTxRef: body.txRef, account: { programId: request.programId } },
     });
     if (!tx) {
-      return reply
-        .status(404)
-        .send({ error: { code: "NOT_FOUND", message: "Transaction not found" } });
+      return reply.status(404).send({
+        error: {
+          code: "NOT_FOUND",
+          message: apiCopy(request, "apiMessages.transactionNotFound"),
+        },
+      });
     }
 
     await coalitionService.reverseCoalitionTransaction(request.programId, body.txRef, body.reason);

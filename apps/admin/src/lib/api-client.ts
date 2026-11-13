@@ -1,3 +1,4 @@
+import i18n from "../i18n";
 const API_URL: string = (import.meta.env.VITE_API_URL as string | undefined) ?? "/api/v1";
 
 interface RequestOptions extends Omit<RequestInit, "headers"> {
@@ -25,6 +26,7 @@ export function setOnUnauthorized(handler: (() => void) | null): void {
 export async function fetchApi<T>(path: string, options?: RequestOptions): Promise<T> {
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
+    "Accept-Language": i18n.language || "es-MX",
     ...options?.headers,
   };
 
@@ -45,7 +47,7 @@ export async function fetchApi<T>(path: string, options?: RequestOptions): Promi
     if (response.status === 401) {
       onUnauthorized?.();
     }
-    throw new Error(body.error?.message ?? `Request failed with status ${String(response.status)}`);
+    throw new Error(body.error?.message ?? i18n.t("errors.REQUEST_ERROR"));
   }
 
   return body.data as T;
@@ -53,7 +55,7 @@ export async function fetchApi<T>(path: string, options?: RequestOptions): Promi
 
 export async function fetchAdminMe(): Promise<AdminUser | null> {
   const response = await fetch(`${API_URL}/admin/me`, {
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", "Accept-Language": i18n.language || "es-MX" },
     credentials: "include",
   });
 
@@ -74,7 +76,7 @@ export async function adminLogin(
 ): Promise<{ ok: boolean; error?: string }> {
   const response = await fetch(`${API_URL}/admin/login`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", "Accept-Language": i18n.language || "es-MX" },
     body: JSON.stringify({ email, password }),
     credentials: "include",
   });
@@ -85,7 +87,7 @@ export async function adminLogin(
   };
 
   if (!response.ok) {
-    return { ok: false, error: body.error?.message ?? "Login failed" };
+    return { ok: false, error: body.error?.message ?? i18n.t("errors.REQUEST_ERROR") };
   }
 
   return { ok: true };

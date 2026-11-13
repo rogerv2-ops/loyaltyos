@@ -23,11 +23,15 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import uiLocale from "@/i18n";
 import { usePermission } from "@/lib/access";
 import { fetchApi } from "@/lib/api-client";
+import { translateEnum, useUiText } from "@/lib/ui-text";
 import type { PaginatedResponse, Segment } from "@/types";
 
 export function SegmentsListPage(): JSX.Element {
+  const uiText = useUiText();
+
   const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -69,15 +73,15 @@ export function SegmentsListPage(): JSX.Element {
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>All Segments</CardTitle>
+          <CardTitle>{uiText("interface.allSegments")}</CardTitle>
           <Select value={typeFilter} onValueChange={setTypeFilter}>
             <SelectTrigger className="w-36">
-              <SelectValue placeholder="Type" />
+              <SelectValue placeholder={uiText("interface.type")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Types</SelectItem>
-              <SelectItem value="DYNAMIC">Dynamic</SelectItem>
-              <SelectItem value="STATIC">Static</SelectItem>
+              <SelectItem value="all">{uiText("interface.allTypes")}</SelectItem>
+              <SelectItem value="DYNAMIC">{uiText("interface.dynamic")}</SelectItem>
+              <SelectItem value="STATIC">{uiText("interface.static")}</SelectItem>
             </SelectContent>
           </Select>
         </CardHeader>
@@ -89,7 +93,7 @@ export function SegmentsListPage(): JSX.Element {
               <Skeleton className="h-10 w-full" />
             </div>
           ) : isError || !data ? (
-            <p className="text-destructive">Failed to load segments.</p>
+            <p className="text-destructive">{uiText("interface.failedToLoadSegments")}</p>
           ) : data.items.length === 0 ? (
             <p className="text-muted-foreground">{t("common.noResults")}</p>
           ) : (
@@ -99,9 +103,9 @@ export function SegmentsListPage(): JSX.Element {
                   <TableRow>
                     <TableHead>{t("common.name")}</TableHead>
                     <TableHead>{t("campaigns.type")}</TableHead>
-                    <TableHead>Members</TableHead>
+                    <TableHead>{uiText("interface.members")}</TableHead>
                     <TableHead>{t("common.status")}</TableHead>
-                    <TableHead>Created</TableHead>
+                    <TableHead>{uiText("interface.created")}</TableHead>
                     <TableHead className="w-20" />
                   </TableRow>
                 </TableHeader>
@@ -110,10 +114,10 @@ export function SegmentsListPage(): JSX.Element {
                     <TableRow key={s.id}>
                       <TableCell className="font-medium">{s.name}</TableCell>
                       <TableCell>
-                        <Badge variant="secondary">{s.type}</Badge>
+                        <Badge variant="secondary">{translateEnum(s.type)}</Badge>
                       </TableCell>
                       <TableCell className="text-sm">
-                        {s.type === "STATIC" ? s.memberIds.length : "Dynamic"}
+                        {s.type === "STATIC" ? s.memberIds.length : uiText("interface.dynamic")}
                       </TableCell>
                       <TableCell>
                         <Badge
@@ -127,7 +131,7 @@ export function SegmentsListPage(): JSX.Element {
                         </Badge>
                       </TableCell>
                       <TableCell className="text-sm text-muted-foreground">
-                        {new Date(s.createdAt).toLocaleDateString()}
+                        {new Date(s.createdAt).toLocaleDateString(uiLocale.language)}
                       </TableCell>
                       <TableCell>
                         {canWrite && (
@@ -171,7 +175,7 @@ export function SegmentsListPage(): JSX.Element {
                     {t("common.previous")}
                   </Button>
                   <span className="text-sm text-muted-foreground">
-                    Page {page} of {data.totalPages}
+                    {uiText("interface.page")} {page} {uiText("interface.of")} {data.totalPages}
                   </span>
                   <Button
                     variant="outline"

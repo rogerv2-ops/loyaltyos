@@ -1,8 +1,10 @@
 "use client";
 
+import { enUS, es } from "date-fns/locale";
 import { ChevronDownIcon, ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
 import * as React from "react";
 import { DayButton, DayPicker, getDefaultClassNames } from "react-day-picker";
+import { useTranslation } from "react-i18next";
 
 import { Button, buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -15,14 +17,33 @@ function Calendar({
   buttonVariant = "ghost",
   formatters,
   components,
+  labels,
   ...props
 }: React.ComponentProps<typeof DayPicker> & {
   buttonVariant?: React.ComponentProps<typeof Button>["variant"];
 }) {
+  const { i18n } = useTranslation();
   const defaultClassNames = getDefaultClassNames();
 
   return (
     <DayPicker
+      locale={i18n.language.startsWith("es") ? es : enUS}
+      labels={{
+        labelNext: () => i18n.t("interface.calendarNext"),
+        labelPrevious: () => i18n.t("interface.calendarPrevious"),
+        labelNav: () => i18n.t("interface.calendarNav"),
+        labelMonthDropdown: () => i18n.t("interface.calendarMonth"),
+        labelYearDropdown: () => i18n.t("interface.calendarYear"),
+        labelDayButton: (date, modifiers) =>
+          [
+            date.toLocaleDateString(i18n.language, { dateStyle: "full" }),
+            modifiers.today ? i18n.t("interface.calendarToday") : "",
+            modifiers.selected ? i18n.t("interface.calendarSelected") : "",
+          ]
+            .filter(Boolean)
+            .join(", "),
+        ...labels,
+      }}
       showOutsideDays={showOutsideDays}
       className={cn(
         "bg-background group/calendar p-3 [--cell-size:2rem] [[data-slot=card-content]_&]:bg-transparent [[data-slot=popover-content]_&]:bg-transparent",
@@ -32,7 +53,7 @@ function Calendar({
       )}
       captionLayout={captionLayout}
       formatters={{
-        formatMonthDropdown: (date) => date.toLocaleString("default", { month: "short" }),
+        formatMonthDropdown: (date) => date.toLocaleString(i18n.language, { month: "short" }),
         ...formatters,
       }}
       classNames={{

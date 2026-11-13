@@ -1,6 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { format } from "date-fns";
 import { ArrowLeft, ArrowRight, Check, CreditCard } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -41,30 +40,20 @@ import {
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
+import uiLocale from "@/i18n";
 import { fetchApi } from "@/lib/api-client";
+import { wizardSchema } from "@/lib/giftcard-batch-schema";
+import { formatUiDate as format, useUiText } from "@/lib/ui-text";
 import { cn } from "@/lib/utils";
 import type { GiftCardBatch, TermsTemplate } from "@/types";
-
-const wizardSchema = z.object({
-  name: z.string().min(1, "Name is required").max(200),
-  prefix: z
-    .string()
-    .max(8)
-    .regex(/^[A-Z0-9]*$/, "Only uppercase letters and numbers")
-    .optional()
-    .or(z.literal("")),
-  quantity: z.coerce.number().int().min(1).max(1_000_000),
-  initialAmount: z.coerce.number().positive("Amount must be greater than 0"),
-  currency: z.string().length(3).default("MXN"),
-  expirationDate: z.date().optional(),
-  termsTemplateId: z.string().min(1, "Select a terms template"),
-});
 
 type WizardData = z.infer<typeof wizardSchema>;
 
 const STEPS = ["step1", "step2", "step3", "step4"] as const;
 
 export function BatchWizardPage(): JSX.Element {
+  const uiText = useUiText();
+
   const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -209,7 +198,7 @@ export function BatchWizardPage(): JSX.Element {
           <CardHeader>
             <CardTitle>{t("giftcards.wizard.step1")}</CardTitle>
             <CardDescription>
-              Configure the basic properties of your gift card batch.
+              {uiText("interface.configureTheBasicPropertiesOfYourGiftCardBatch")}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -217,12 +206,18 @@ export function BatchWizardPage(): JSX.Element {
               <Label htmlFor="name">{t("campaigns.name")} *</Label>
               <Input id="name" {...form.register("name")} />
               {form.formState.errors.name && (
-                <p className="text-sm text-destructive">{form.formState.errors.name.message}</p>
+                <p className="text-sm text-destructive">
+                  {uiText(form.formState.errors.name.message)}
+                </p>
               )}
             </div>
             <div>
               <Label htmlFor="prefix">{t("giftcards.prefix")}</Label>
-              <Input id="prefix" placeholder="e.g. HOLIDAY" {...form.register("prefix")} />
+              <Input
+                id="prefix"
+                placeholder={uiText("interface.eGHoliday")}
+                {...form.register("prefix")}
+              />
             </div>
             <div>
               <Label htmlFor="quantity">{t("giftcards.quantity")} *</Label>
@@ -235,7 +230,9 @@ export function BatchWizardPage(): JSX.Element {
                 }}
               />
               {form.formState.errors.quantity && (
-                <p className="text-sm text-destructive">{form.formState.errors.quantity.message}</p>
+                <p className="text-sm text-destructive">
+                  {uiText(form.formState.errors.quantity.message)}
+                </p>
               )}
             </div>
           </CardContent>
@@ -259,7 +256,7 @@ export function BatchWizardPage(): JSX.Element {
               />
               {form.formState.errors.initialAmount && (
                 <p className="text-sm text-destructive">
-                  {form.formState.errors.initialAmount.message}
+                  {uiText(form.formState.errors.initialAmount.message)}
                 </p>
               )}
             </div>
@@ -292,7 +289,7 @@ export function BatchWizardPage(): JSX.Element {
                       !expDate && "text-muted-foreground",
                     )}
                   >
-                    {expDate ? format(expDate, "PP") : "Pick a date"}
+                    {expDate ? format(expDate, "PP") : uiText("interface.pickADate")}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="start">
@@ -337,7 +334,7 @@ export function BatchWizardPage(): JSX.Element {
                 }}
               >
                 <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select a template..." />
+                  <SelectValue placeholder={uiText("interface.selectATemplate")} />
                 </SelectTrigger>
                 <SelectContent>
                   {filteredTemplates.map((tpl) => (
@@ -349,7 +346,7 @@ export function BatchWizardPage(): JSX.Element {
               </Select>
               {form.formState.errors.termsTemplateId && (
                 <p className="text-sm text-destructive">
-                  {form.formState.errors.termsTemplateId.message}
+                  {uiText(form.formState.errors.termsTemplateId.message)}
                 </p>
               )}
             </div>
@@ -380,7 +377,9 @@ export function BatchWizardPage(): JSX.Element {
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">{t("giftcards.quantity")}</p>
-                <p className="font-medium">{form.watch("quantity").toLocaleString()}</p>
+                <p className="font-medium">
+                  {form.watch("quantity").toLocaleString(uiLocale.language)}
+                </p>
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">{t("giftcards.amount")}</p>
@@ -390,19 +389,27 @@ export function BatchWizardPage(): JSX.Element {
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">{t("giftcards.expiration")}</p>
-                <p className="font-medium">{expDate ? format(expDate, "PP") : "1 year"}</p>
+                <p className="font-medium">
+                  {expDate ? format(expDate, "PP") : uiText("interface.oneYear")}
+                </p>
               </div>
             </div>
             <Separator />
             <div>
-              <p className="text-sm text-muted-foreground">Estimated total liability</p>
+              <p className="text-sm text-muted-foreground">
+                {uiText("interface.estimatedTotalLiability")}
+              </p>
               <p className="text-xl font-bold">
-                {(form.watch("quantity") * form.watch("initialAmount")).toLocaleString()}{" "}
+                {(form.watch("quantity") * form.watch("initialAmount")).toLocaleString(
+                  uiLocale.language,
+                )}{" "}
                 {form.watch("currency")}
               </p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Estimated generation time</p>
+              <p className="text-sm text-muted-foreground">
+                {uiText("interface.estimatedGenerationTime")}
+              </p>
               <p className="font-medium">
                 ~{Math.max(1, Math.ceil(form.watch("quantity") / 1000))}s
               </p>
@@ -439,10 +446,12 @@ export function BatchWizardPage(): JSX.Element {
       <AlertDialog open={showQuantityDialog} onOpenChange={setShowQuantityDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Large batch size</AlertDialogTitle>
+            <AlertDialogTitle>{uiText("interface.largeBatchSize")}</AlertDialogTitle>
             <AlertDialogDescription>
-              Creating {pendingQuantity.toLocaleString()} gift cards will take approximately{" "}
-              {Math.ceil(pendingQuantity / 1000)} seconds. Do you want to continue?
+              {uiText("interface.batchConfirm", {
+                quantity: pendingQuantity.toLocaleString(uiLocale.language),
+                seconds: Math.ceil(pendingQuantity / 1000),
+              })}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -463,7 +472,9 @@ export function BatchWizardPage(): JSX.Element {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>{t("giftcards.newTermsTemplate")}</DialogTitle>
-            <DialogDescription>Create a new terms and conditions template.</DialogDescription>
+            <DialogDescription>
+              {uiText("interface.createANewTermsAndConditionsTemplate")}
+            </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div>

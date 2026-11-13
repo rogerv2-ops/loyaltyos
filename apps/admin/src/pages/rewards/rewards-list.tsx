@@ -16,8 +16,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import uiLocale from "@/i18n";
 import { usePermission } from "@/lib/access";
 import { fetchApi } from "@/lib/api-client";
+
+import { translateLabel,useUiText } from "../../lib/ui-text";
 
 interface Reward {
   id: string;
@@ -42,15 +45,17 @@ interface RewardsResponse {
 }
 
 const CATEGORY_LABELS: Record<string, string> = {
-  DISCOUNT_FUTURE: "Discount",
-  PHYSICAL_PRODUCT: "Product",
-  GIFT_CARD: "Gift Card",
-  EXPERIENCE: "Experience",
-  CHARITY_DONATION: "Charity",
-  COALITION_TRANSFER: "Coalition",
+  DISCOUNT_FUTURE: "interface.discount",
+  PHYSICAL_PRODUCT: "interface.product",
+  GIFT_CARD: "interface.giftCard",
+  EXPERIENCE: "interface.experience",
+  CHARITY_DONATION: "interface.charity",
+  COALITION_TRANSFER: "interface.coalition",
 };
 
 export function RewardsListPage(): JSX.Element {
+  const uiText = useUiText();
+
   const [view, setView] = useState<"table" | "grid">("table");
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
@@ -69,14 +74,16 @@ export function RewardsListPage(): JSX.Element {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Rewards</h1>
-          <p className="text-sm text-muted-foreground">Manage your rewards catalog</p>
+          <h1 className="text-2xl font-bold">{uiText("interface.rewards")}</h1>
+          <p className="text-sm text-muted-foreground">
+            {uiText("interface.manageYourRewardsCatalog")}
+          </p>
         </div>
         {canWrite && (
           <Button asChild>
             <Link to="/rewards/new">
               <Plus className="mr-2 h-4 w-4" />
-              New Reward
+              {uiText("interface.newReward")}
             </Link>
           </Button>
         )}
@@ -86,7 +93,7 @@ export function RewardsListPage(): JSX.Element {
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder="Search rewards..."
+            placeholder={uiText("interface.searchRewards")}
             className="pl-9"
             value={search}
             onChange={(e) => {
@@ -140,7 +147,8 @@ export function RewardsListPage(): JSX.Element {
       {data && data.totalPages > 1 && (
         <div className="flex items-center justify-between">
           <p className="text-sm text-muted-foreground">
-            Showing {(page - 1) * 20 + 1} – {Math.min(page * 20, data.total)} of {data.total}
+            {uiText("interface.showing")} {(page - 1) * 20 + 1} – {Math.min(page * 20, data.total)}{" "}
+            {uiText("interface.of")} {data.total}
           </p>
           <div className="flex gap-2">
             <Button
@@ -151,7 +159,7 @@ export function RewardsListPage(): JSX.Element {
                 setPage((p) => p - 1);
               }}
             >
-              Previous
+              {uiText("common.previous")}
             </Button>
             <Button
               variant="outline"
@@ -161,7 +169,7 @@ export function RewardsListPage(): JSX.Element {
                 setPage((p) => p + 1);
               }}
             >
-              Next
+              {uiText("common.next")}
             </Button>
           </div>
         </div>
@@ -179,25 +187,27 @@ function RewardsTable({
   canWrite: boolean;
   onEdit: (id: string) => void;
 }): JSX.Element {
+  const uiText = useUiText();
+
   return (
     <div className="rounded-md border">
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Name</TableHead>
-            <TableHead>Category</TableHead>
-            <TableHead>Cost</TableHead>
-            <TableHead>Stock</TableHead>
-            <TableHead>Tier</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead className="w-20">Actions</TableHead>
+            <TableHead>{uiText("common.name")}</TableHead>
+            <TableHead>{uiText("interface.category")}</TableHead>
+            <TableHead>{uiText("interface.cost")}</TableHead>
+            <TableHead>{uiText("interface.stock")}</TableHead>
+            <TableHead>{uiText("interface.tier")}</TableHead>
+            <TableHead>{uiText("common.status")}</TableHead>
+            <TableHead className="w-20">{uiText("common.actions")}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {rewards.length === 0 ? (
             <TableRow>
               <TableCell colSpan={7} className="text-center text-muted-foreground">
-                No rewards found
+                {uiText("interface.noRewardsFound")}
               </TableCell>
             </TableRow>
           ) : (
@@ -206,17 +216,17 @@ function RewardsTable({
                 <TableCell className="font-medium">{r.name}</TableCell>
                 <TableCell>
                   {r.category ? (
-                    <Badge variant="secondary">{CATEGORY_LABELS[r.category] ?? r.category}</Badge>
+                    <Badge variant="secondary">{translateLabel(CATEGORY_LABELS, r.category)}</Badge>
                   ) : (
                     "—"
                   )}
                 </TableCell>
-                <TableCell>{r.pointsCost.toLocaleString()} pts</TableCell>
+                <TableCell>{r.pointsCost.toLocaleString(uiLocale.language)} pts</TableCell>
                 <TableCell>{r.stock ?? "∞"}</TableCell>
-                <TableCell>{r.tierRequired ?? "All"}</TableCell>
+                <TableCell>{r.tierRequired ?? uiText("interface.all")}</TableCell>
                 <TableCell>
                   <Badge variant={r.isActive ? "default" : "outline"}>
-                    {r.isActive ? "Active" : "Draft"}
+                    {r.isActive ? uiText("common.active") : uiText("interface.draft")}
                   </Badge>
                 </TableCell>
                 <TableCell>
@@ -257,8 +267,14 @@ function RewardsGrid({
   canWrite: boolean;
   onEdit: (id: string) => void;
 }): JSX.Element {
+  const uiText = useUiText();
+
   if (rewards.length === 0) {
-    return <p className="text-center text-muted-foreground py-12">No rewards found</p>;
+    return (
+      <p className="text-center text-muted-foreground py-12">
+        {uiText("interface.noRewardsFound")}
+      </p>
+    );
   }
 
   return (
@@ -277,16 +293,19 @@ function RewardsGrid({
               <div>
                 <h3 className="font-semibold">{r.name}</h3>
                 <p className="text-sm text-muted-foreground">
-                  {r.pointsCost.toLocaleString()} pts
+                  {r.pointsCost.toLocaleString(uiLocale.language)} pts
                   {r.tierRequired ? ` · ${r.tierRequired}+` : ""}
                 </p>
               </div>
               <Badge variant={r.isActive ? "default" : "outline"}>
-                {r.isActive ? "Active" : "Draft"}
+                {r.isActive ? uiText("common.active") : uiText("interface.draft")}
               </Badge>
             </div>
             {r.stock != null && (
-              <p className="mt-2 text-xs text-muted-foreground">Stock: {r.stock}</p>
+              <p className="mt-2 text-xs text-muted-foreground">
+                {uiText("interface.stock2")}
+                {r.stock}
+              </p>
             )}
             <div className="mt-3 flex gap-2">
               {canWrite && (
@@ -298,13 +317,14 @@ function RewardsGrid({
                   }}
                 >
                   <Pencil className="mr-1 h-3 w-3" />
-                  Edit
+                  {uiText("common.edit")}
                 </Button>
               )}
               <Button variant="outline" size="sm" asChild>
                 <Link to={`/rewards/${r.id}/redemptions`}>
                   <List className="mr-1 h-3 w-3" />
-                  Redemptions ({r.redemptions.length})
+                  {uiText("interface.redemptions")}
+                  {r.redemptions.length})
                 </Link>
               </Button>
             </div>

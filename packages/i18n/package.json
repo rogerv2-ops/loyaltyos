@@ -11,7 +11,7 @@
     "lint": "eslint src/",
     "test": "vitest run",
     "gen-types": "tsx scripts/gen-types.ts",
-    "check-parity": "tsx scripts/check-parity.ts"
+    "check-parity": "tsx scripts/check-parity.ts && tsx scripts/check-ui.ts"
   },
   "dependencies": {
     "accept-language-parser": "^1.5.0",

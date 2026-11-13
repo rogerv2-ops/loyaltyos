@@ -8,6 +8,7 @@ import type { FastifyInstance } from "fastify";
 import { z } from "zod";
 
 import { prisma } from "../../db.js";
+import { apiCopy } from "../../lib/api-copy.js";
 
 const segments = new SegmentsService(prisma);
 
@@ -67,7 +68,9 @@ export function adminSegmentsRoutes(app: FastifyInstance, _opts: unknown, done: 
     const { id } = z.object({ id: z.string() }).parse(request.params);
     const owned = await prisma.segment.findFirst({ where: { id, programId: request.programId } });
     if (!owned) {
-      return reply.status(404).send({ error: { code: "NOT_FOUND", message: "Segment not found" } });
+      return reply.status(404).send({
+        error: { code: "NOT_FOUND", message: apiCopy(request, "apiMessages.segmentNotFound") },
+      });
     }
     const segment = await segments.getById(id);
     return reply.send({ data: segment });
@@ -80,7 +83,9 @@ export function adminSegmentsRoutes(app: FastifyInstance, _opts: unknown, done: 
 
     const owned = await prisma.segment.findFirst({ where: { id, programId: request.programId } });
     if (!owned) {
-      return reply.status(404).send({ error: { code: "NOT_FOUND", message: "Segment not found" } });
+      return reply.status(404).send({
+        error: { code: "NOT_FOUND", message: apiCopy(request, "apiMessages.segmentNotFound") },
+      });
     }
 
     const segment = await segments.update(id, body as Parameters<typeof segments.update>[1]);
@@ -93,7 +98,9 @@ export function adminSegmentsRoutes(app: FastifyInstance, _opts: unknown, done: 
 
     const owned = await prisma.segment.findFirst({ where: { id, programId: request.programId } });
     if (!owned) {
-      return reply.status(404).send({ error: { code: "NOT_FOUND", message: "Segment not found" } });
+      return reply.status(404).send({
+        error: { code: "NOT_FOUND", message: apiCopy(request, "apiMessages.segmentNotFound") },
+      });
     }
 
     await segments.delete(id);
@@ -105,7 +112,9 @@ export function adminSegmentsRoutes(app: FastifyInstance, _opts: unknown, done: 
     const { id } = z.object({ id: z.string() }).parse(request.params);
     const owned = await prisma.segment.findFirst({ where: { id, programId: request.programId } });
     if (!owned) {
-      return reply.status(404).send({ error: { code: "NOT_FOUND", message: "Segment not found" } });
+      return reply.status(404).send({
+        error: { code: "NOT_FOUND", message: apiCopy(request, "apiMessages.segmentNotFound") },
+      });
     }
     const count = await segments.count(id);
     return reply.send({ data: { count } });
@@ -123,7 +132,9 @@ export function adminSegmentsRoutes(app: FastifyInstance, _opts: unknown, done: 
 
     const owned = await prisma.segment.findFirst({ where: { id, programId: request.programId } });
     if (!owned) {
-      return reply.status(404).send({ error: { code: "NOT_FOUND", message: "Segment not found" } });
+      return reply.status(404).send({
+        error: { code: "NOT_FOUND", message: apiCopy(request, "apiMessages.segmentNotFound") },
+      });
     }
 
     const result = await segments.getMembers(id, query);
@@ -139,7 +150,9 @@ export function adminSegmentsRoutes(app: FastifyInstance, _opts: unknown, done: 
 
     const owned = await prisma.segment.findFirst({ where: { id, programId: request.programId } });
     if (!owned) {
-      return reply.status(404).send({ error: { code: "NOT_FOUND", message: "Segment not found" } });
+      return reply.status(404).send({
+        error: { code: "NOT_FOUND", message: apiCopy(request, "apiMessages.segmentNotFound") },
+      });
     }
 
     const segment = await segments.addMembers(id, memberIds);
@@ -155,7 +168,9 @@ export function adminSegmentsRoutes(app: FastifyInstance, _opts: unknown, done: 
 
     const owned = await prisma.segment.findFirst({ where: { id, programId: request.programId } });
     if (!owned) {
-      return reply.status(404).send({ error: { code: "NOT_FOUND", message: "Segment not found" } });
+      return reply.status(404).send({
+        error: { code: "NOT_FOUND", message: apiCopy(request, "apiMessages.segmentNotFound") },
+      });
     }
 
     const segment = await segments.removeMembers(id, memberIds);

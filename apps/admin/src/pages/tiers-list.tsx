@@ -16,8 +16,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import uiLocale from "@/i18n";
 import { usePermission } from "@/lib/access";
 import { fetchApi } from "@/lib/api-client";
+
+import { useUiText } from "../lib/ui-text";
 
 interface TierItem {
   id: string;
@@ -30,6 +33,8 @@ interface TierItem {
 }
 
 export function TiersListPage(): JSX.Element {
+  const uiText = useUiText();
+
   const { t } = useTranslation();
   const queryClient = useQueryClient();
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -123,7 +128,7 @@ export function TiersListPage(): JSX.Element {
             disabled={newTier}
           >
             <Plus className="mr-2 h-4 w-4" />
-            New Tier
+            {uiText("interface.newTier")}
           </Button>
         )}
       </div>
@@ -131,8 +136,10 @@ export function TiersListPage(): JSX.Element {
       {!isLoading && tiers && tiers.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle>Distribution</CardTitle>
-            <CardDescription>Tier hierarchy from highest to lowest rank.</CardDescription>
+            <CardTitle>{uiText("interface.distribution")}</CardTitle>
+            <CardDescription>
+              {uiText("interface.tierHierarchyFromHighestToLowestRank")}
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="flex flex-col items-center gap-2">
@@ -149,7 +156,8 @@ export function TiersListPage(): JSX.Element {
                 >
                   {tier.name}
                   <span className="ml-2 text-xs text-muted-foreground">
-                    ({">"} {tier.minPoints.toLocaleString()} pts)
+                    ({">"} {tier.minPoints.toLocaleString(uiLocale.language)}{" "}
+                    {uiText("interface.pts")}
                   </span>
                 </div>
               ))}
@@ -160,7 +168,7 @@ export function TiersListPage(): JSX.Element {
 
       <Card>
         <CardHeader>
-          <CardTitle>All Tiers</CardTitle>
+          <CardTitle>{uiText("interface.allTiers2")}</CardTitle>
         </CardHeader>
         <CardContent>
           {isLoading ? (
@@ -170,14 +178,14 @@ export function TiersListPage(): JSX.Element {
               ))}
             </div>
           ) : isError ? (
-            <p className="text-destructive">Failed to load tiers.</p>
+            <p className="text-destructive">{uiText("interface.failedToLoadTiers")}</p>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-12">Rank</TableHead>
+                  <TableHead className="w-12">{uiText("interface.rank")}</TableHead>
                   <TableHead>{t("common.name")}</TableHead>
-                  <TableHead>Min Points</TableHead>
+                  <TableHead>{uiText("interface.minPoints")}</TableHead>
                   <TableHead>Color</TableHead>
                   <TableHead className="w-32" />
                 </TableRow>
@@ -185,14 +193,16 @@ export function TiersListPage(): JSX.Element {
               <TableBody>
                 {newTier && (
                   <TableRow>
-                    <TableCell className="text-muted-foreground">New</TableCell>
+                    <TableCell className="text-muted-foreground">
+                      {uiText("interface.new")}
+                    </TableCell>
                     <TableCell>
                       <Input
                         value={formData.name}
                         onChange={(e) => {
                           setFormData((f) => ({ ...f, name: e.target.value }));
                         }}
-                        placeholder="Tier name"
+                        placeholder={uiText("interface.tierName")}
                       />
                     </TableCell>
                     <TableCell>
@@ -254,7 +264,7 @@ export function TiersListPage(): JSX.Element {
                           }}
                         />
                       ) : (
-                        <span>{tier.minPoints.toLocaleString()}</span>
+                        <span>{tier.minPoints.toLocaleString(uiLocale.language)}</span>
                       )}
                     </TableCell>
                     <TableCell>

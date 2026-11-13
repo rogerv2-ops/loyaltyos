@@ -2,7 +2,9 @@ import esMX from "./locales/es-MX.json" with { type: "json" };
 
 type JsonShape = typeof esMX;
 
-type DotPrefix<T extends string, K extends string> = K extends "" ? T : `${T}.${K}`;
+type DotPrefix<T extends string, K extends string> = K extends ""
+  ? T
+  : `${T}.${K}`;
 
 type NestedKeys<T, Prefix extends string = ""> = {
   [K in keyof T & string]: T[K] extends Record<string, unknown>

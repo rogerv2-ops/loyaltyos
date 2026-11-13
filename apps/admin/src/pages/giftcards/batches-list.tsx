@@ -1,5 +1,4 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { format } from "date-fns";
 import { Plus } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -25,8 +24,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import uiLocale from "@/i18n";
 import { usePermission } from "@/lib/access";
 import { fetchApi } from "@/lib/api-client";
+import { formatUiDate as format } from "@/lib/ui-text";
 import type { GiftCardBatch, PaginatedResponse } from "@/types";
 
 const TERMINAL_STATUSES = new Set(["ready", "partial", "failed", "cancelled"]);
@@ -156,12 +157,14 @@ export function BatchesListPage(): JSX.Element {
                         {batch.generatedCount}/{batch.quantity}
                       </TableCell>
                       <TableCell className="text-right">
-                        {batch.initialAmount.toLocaleString()}
+                        {batch.initialAmount.toLocaleString(uiLocale.language)}
                       </TableCell>
                       <TableCell>{batch.currency}</TableCell>
                       <TableCell>
                         <Badge className={STATUS_COLORS[batch.status] ?? ""}>
-                          {t(`giftcards.status.${batch.status}`)}
+                          {t(`giftcards.status.${batch.status}`, {
+                            defaultValue: t("common.unknown"),
+                          })}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-sm text-muted-foreground">
