@@ -33,8 +33,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import uiLocale from "@/i18n";
 import { fetchApi } from "@/lib/api-client";
 import { useAdminAuth } from "@/lib/auth-context";
+import { translateEnum, useUiText } from "@/lib/ui-text";
 
 interface ApiToken {
   id: string;
@@ -55,6 +57,8 @@ function tokenState(token: ApiToken): "active" | "revoked" | "expired" {
 }
 
 export function ApiTokensPage(): JSX.Element {
+  const uiText = useUiText();
+
   const { t } = useTranslation();
   const { admin } = useAdminAuth();
   const queryClient = useQueryClient();
@@ -125,8 +129,7 @@ export function ApiTokensPage(): JSX.Element {
         <CardHeader>
           <CardTitle>{t("navigation.apiTokens")}</CardTitle>
           <CardDescription>
-            Personal access tokens authenticate API and MCP clients as you. A token never out-ranks
-            your current role and is shown only once at creation.
+            {uiText("interface.personalAccessTokensAuthenticateApiAndMcpClientsAsYouAToken")}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -137,16 +140,16 @@ export function ApiTokensPage(): JSX.Element {
               ))}
             </div>
           ) : isError ? (
-            <p className="text-destructive">Failed to load tokens.</p>
+            <p className="text-destructive">{uiText("interface.failedToLoadTokens")}</p>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>{t("common.name")}</TableHead>
                   <TableHead>Token</TableHead>
-                  <TableHead>Role</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Expires</TableHead>
+                  <TableHead>{uiText("interface.role")}</TableHead>
+                  <TableHead>{uiText("common.status")}</TableHead>
+                  <TableHead>{uiText("interface.expires")}</TableHead>
                   <TableHead className="w-16" />
                 </TableRow>
               </TableHeader>
@@ -165,7 +168,7 @@ export function ApiTokensPage(): JSX.Element {
                       <span className="font-mono text-sm">{token.prefix}…</span>
                     </TableCell>
                     <TableCell>
-                      <Badge variant="outline">{token.role}</Badge>
+                      <Badge variant="outline">{translateEnum(token.role)}</Badge>
                     </TableCell>
                     <TableCell>
                       <Badge
@@ -177,10 +180,12 @@ export function ApiTokensPage(): JSX.Element {
                               : "outline"
                         }
                       >
-                        {tokenState(token)}
+                        {translateEnum(tokenState(token))}
                       </Badge>
                     </TableCell>
-                    <TableCell>{new Date(token.expiresAt).toLocaleDateString()}</TableCell>
+                    <TableCell>
+                      {new Date(token.expiresAt).toLocaleDateString(uiLocale.language)}
+                    </TableCell>
                     <TableCell>
                       {tokenState(token) !== "revoked" && (
                         <Button
@@ -214,8 +219,10 @@ export function ApiTokensPage(): JSX.Element {
           {createdToken ? (
             <>
               <DialogHeader>
-                <DialogTitle>Token created</DialogTitle>
-                <DialogDescription>Copy it now — it will not be shown again.</DialogDescription>
+                <DialogTitle>{uiText("interface.tokenCreated")}</DialogTitle>
+                <DialogDescription>
+                  {uiText("interface.copyItNowItWillNotBeShownAgain")}
+                </DialogDescription>
               </DialogHeader>
               <div className="flex items-center gap-2 rounded-md border bg-muted p-3">
                 <code className="flex-1 break-all font-mono text-sm">{createdToken}</code>
@@ -242,10 +249,9 @@ export function ApiTokensPage(): JSX.Element {
           ) : (
             <>
               <DialogHeader>
-                <DialogTitle>Create API token</DialogTitle>
+                <DialogTitle>{uiText("interface.createApiToken")}</DialogTitle>
                 <DialogDescription>
-                  Give the token a name and the role it may act with. The role cannot exceed your
-                  own.
+                  {uiText("interface.giveTheTokenANameAndTheRoleItMayActWith")}
                 </DialogDescription>
               </DialogHeader>
               <div className="space-y-4">
@@ -256,11 +262,11 @@ export function ApiTokensPage(): JSX.Element {
                     onChange={(e) => {
                       setName(e.target.value);
                     }}
-                    placeholder="CI bot"
+                    placeholder={uiText("interface.ciBot")}
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Role</Label>
+                  <Label>{uiText("interface.role")}</Label>
                   <Select
                     value={role}
                     onValueChange={(v) => {
@@ -273,14 +279,14 @@ export function ApiTokensPage(): JSX.Element {
                     <SelectContent>
                       {allowedRoles.map((r) => (
                         <SelectItem key={r} value={r}>
-                          {r}
+                          {translateEnum(r)}
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label>Expires in (days)</Label>
+                  <Label>{uiText("interface.expiresInDays")}</Label>
                   <Input
                     type="number"
                     min={1}
