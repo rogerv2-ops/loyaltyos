@@ -88,13 +88,11 @@ export function localizeMessage(code: string, locale: SupportedLocale): string {
       current === null ||
       !Object.prototype.hasOwnProperty.call(current, part)
     ) {
-      return (CATALOGS[locale].errors as Record<string, string>).REQUEST_ERROR ?? "Error";
+      return code;
     }
     current = (current as Record<string, unknown>)[part];
   }
-  return typeof current === "string"
-    ? current
-    : ((CATALOGS[locale].errors as Record<string, string>).REQUEST_ERROR ?? "Error");
+  return typeof current === "string" ? current : code;
 }
 
 function getLocale(req: FastifyRequest): SupportedLocale {

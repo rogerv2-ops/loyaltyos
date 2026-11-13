@@ -92,14 +92,20 @@ export class RewardOutOfStockError extends Error {
 }
 
 export class RewardTierInsufficientError extends Error {
-  constructor(required: string, current: string) {
+  constructor(
+    public readonly required: string,
+    public readonly current: string,
+  ) {
     super(`Tier "${required}" required, but member has "${current}"`);
     this.name = "RewardTierInsufficientError";
   }
 }
 
 export class RewardInsufficientPointsError extends Error {
-  constructor(required: number, current: number) {
+  constructor(
+    public readonly required: number,
+    public readonly current: number,
+  ) {
     super(`Insufficient points: need ${String(required)}, have ${String(current)}`);
     this.name = "RewardInsufficientPointsError";
   }

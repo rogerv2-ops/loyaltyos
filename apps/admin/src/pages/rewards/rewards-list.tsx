@@ -20,7 +20,7 @@ import uiLocale from "@/i18n";
 import { usePermission } from "@/lib/access";
 import { fetchApi } from "@/lib/api-client";
 
-import { useUiText } from "../../lib/ui-text";
+import { translateLabel,useUiText } from "../../lib/ui-text";
 
 interface Reward {
   id: string;
@@ -46,11 +46,11 @@ interface RewardsResponse {
 
 const CATEGORY_LABELS: Record<string, string> = {
   DISCOUNT_FUTURE: "interface.discount",
-  PHYSICAL_PRODUCT: "Product",
+  PHYSICAL_PRODUCT: "interface.product",
   GIFT_CARD: "interface.giftCard",
   EXPERIENCE: "interface.experience",
-  CHARITY_DONATION: "Charity",
-  COALITION_TRANSFER: "Coalition",
+  CHARITY_DONATION: "interface.charity",
+  COALITION_TRANSFER: "interface.coalition",
 };
 
 export function RewardsListPage(): JSX.Element {
@@ -216,9 +216,7 @@ function RewardsTable({
                 <TableCell className="font-medium">{r.name}</TableCell>
                 <TableCell>
                   {r.category ? (
-                    <Badge variant="secondary">
-                      {uiText(CATEGORY_LABELS[r.category] ?? r.category)}
-                    </Badge>
+                    <Badge variant="secondary">{translateLabel(CATEGORY_LABELS, r.category)}</Badge>
                   ) : (
                     "—"
                   )}

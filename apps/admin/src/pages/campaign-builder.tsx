@@ -531,7 +531,7 @@ export function CampaignBuilderPage(): JSX.Element {
                 <div className="flex justify-between">
                   <dt className="text-muted-foreground">{uiText("interface.type")}</dt>
                   <dd className="font-medium">
-                    {uiText(selectedType?.label ?? form.watch("type"))}
+                    {selectedType ? uiText(selectedType.label) : form.watch("type")}
                   </dd>
                 </div>
                 <div className="flex justify-between">

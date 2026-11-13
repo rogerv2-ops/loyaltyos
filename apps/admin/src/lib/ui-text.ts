@@ -8,20 +8,23 @@ import i18n from "../i18n";
 
 // UI keys are semantic paths in the shared catalogs. No source-text lookup.
 // Store semantic validation tokens; render with the current locale even after switching.
-z.setErrorMap((issue) => ({ message: "@validation:" + JSON.stringify(validationCopyKey(issue)) }));
+const validationTokens = new Map<string, ReturnType<typeof validationCopyKey>>();
+z.setErrorMap((issue) => {
+  const copy = validationCopyKey(issue);
+  const token = "@validation:" + JSON.stringify(copy);
+  validationTokens.set(token, copy);
+  return { message: token };
+});
 
 export function translateUi(
   key: string | undefined | null,
   params: Record<string, string | number> = {},
 ): string {
   if (key == null) return "";
-  if (key.startsWith("@validation:")) {
-    const token = JSON.parse(key.slice(12)) as {
-      key: string;
-      params: Record<string, string | number>;
-    };
-    return i18n.t(token.key, token.params);
-  }
+  const token = validationTokens.get(key);
+  if (token) return i18n.t(token.key, token.params);
+  // Never parse text supplied by an error, API response or user as JSON.
+  if (key.startsWith("@validation:")) return key;
   if (
     !key.startsWith("interface.") &&
     !key.startsWith("validation.") &&
@@ -38,11 +41,18 @@ export function useUiText(): typeof translateUi {
 }
 
 export function translateEnum(value: string): string {
-  return i18n.t(`displayEnums.${value}`, { defaultValue: i18n.t("common.unknown") });
+  return i18n.t(`displayEnums.${value}`, {
+    defaultValue: `${i18n.t("common.unknown")} (${value})`,
+  });
 }
 
 export function formatUiDate(date: Date, pattern: string): string {
   return format(date, pattern, {
     locale: i18n.language.startsWith("es") ? spanishDates : englishDates,
   });
+}
+
+/** Only audited built-in labels are translation keys. All other values stay literal. */
+export function translateLabel(labels: Record<string, string>, value: string): string {
+  return Object.hasOwn(labels, value) ? translateUi(labels[value]) : value;
 }

@@ -41,9 +41,11 @@ vi.mock("../lib/notifications-setup.js", () => ({
 
 import type { FastifyInstance } from "fastify";
 
+import Fastify from "fastify";
+
 import { buildApp } from "../app.js";
 import { LoyaltyError } from "../lib/errors.js";
-import { localizeMessage } from "../lib/error-handler.js";
+import { errorHandler, localizeMessage } from "../lib/error-handler.js";
 
 let app: FastifyInstance;
 
@@ -70,13 +72,13 @@ beforeEach(async () => {
   app = await buildApp({ logger: false });
 });
 
-describe("localizeMessage - prototype-safe lookup", () => {
-  it("uses generic localized copy instead of traversing __proto__", () => {
-    expect(localizeMessage("__proto__", "es-MX")).toBe("Error en la solicitud");
+describe("localizeMessage — prototype-safe lookup", () => {
+  it("returns the literal '__proto__' instead of traversing prototype", () => {
+    expect(localizeMessage("__proto__", "es-MX")).toBe("__proto__");
   });
 
-  it("uses generic localized copy instead of traversing constructor", () => {
-    expect(localizeMessage("constructor", "es-MX")).toBe("Error en la solicitud");
+  it("returns the literal 'constructor' instead of traversing prototype", () => {
+    expect(localizeMessage("constructor", "es-MX")).toBe("constructor");
   });
 
   it("still resolves real error codes", () => {
@@ -86,8 +88,8 @@ describe("localizeMessage - prototype-safe lookup", () => {
     expect(result.length).toBeGreaterThan(0);
   });
 
-  it("uses localized copy for unknown error codes, leaving machine code to the envelope", () => {
-    expect(localizeMessage("UNKNOWN_CODE_XYZ", "es-MX")).toBe("Error en la solicitud");
+  it("returns the code for unknown error codes", () => {
+    expect(localizeMessage("UNKNOWN_CODE_XYZ", "es-MX")).toBe("UNKNOWN_CODE_XYZ");
   });
 });
 
@@ -108,4 +110,25 @@ describe("error envelope — no details leak", () => {
     expect(body.error).toHaveProperty("message");
     expect(body.error).not.toHaveProperty("details");
   });
+});
+
+describe("unknown-code envelope compatibility", () => {
+  it.each(["UNKNOWN_CODE_XYZ", "__proto__", "constructor"])(
+    "preserves code, status and literal fallback for %s",
+    async (code) => {
+      const isolated = Fastify();
+      isolated.setErrorHandler(errorHandler);
+      isolated.get("/fixture", async () => {
+        throw new LoyaltyError(code, 409);
+      });
+      const result = await isolated.inject({
+        method: "GET",
+        url: "/fixture",
+        headers: { "accept-language": "es-MX" },
+      });
+      expect(result.statusCode).toBe(409);
+      expect(result.json()).toEqual({ error: { code, message: code } });
+      await isolated.close();
+    },
+  );
 });

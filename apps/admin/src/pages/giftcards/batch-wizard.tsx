@@ -42,24 +42,10 @@ import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import uiLocale from "@/i18n";
 import { fetchApi } from "@/lib/api-client";
+import { wizardSchema } from "@/lib/giftcard-batch-schema";
 import { formatUiDate as format, useUiText } from "@/lib/ui-text";
 import { cn } from "@/lib/utils";
 import type { GiftCardBatch, TermsTemplate } from "@/types";
-
-const wizardSchema = z.object({
-  name: z.string().min(1, "interface.nameIsRequired").max(200),
-  prefix: z
-    .string()
-    .max(8)
-    .regex(/^[A-Z0-9]*$/, "interface.onlyUppercaseLettersAndNumbers")
-    .optional()
-    .or(z.literal("")),
-  quantity: z.coerce.number().int().min(1).max(1_000_000),
-  initialAmount: z.coerce.number().positive("interface.amountMustBeGreaterThan0"),
-  currency: z.string().length(3).default("MXN"),
-  expirationDate: z.date().optional(),
-  termsTemplateId: z.string().min(1, "interface.selectATermsTemplate"),
-});
 
 type WizardData = z.infer<typeof wizardSchema>;
 

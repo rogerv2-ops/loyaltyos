@@ -862,7 +862,10 @@
     "calendarSelected": "seleccionado",
     "calendarToday": "hoy",
     "amountPoints": "{{amount}} pts",
-    "seriesDetails": " · Serie: {{id}} #{{position}}"
+    "seriesDetails": " · Serie: {{id}} #{{position}}",
+    "product": "Producto",
+    "charity": "Donación",
+    "coalition": "Coalición"
   },
   "displayEnums": {
     "PENDING": "Pendiente",
@@ -974,5 +977,9 @@
     "cancelled": "Operación cancelada.",
     "noResponse": "No se recibió una respuesta",
     "serverError": "Error del servidor ({{status}})"
+  },
+  "eligibility": {
+    "tierRequired": "Se requiere el nivel \"{{required}}\", pero el miembro tiene \"{{current}}\"",
+    "pointsRequired": "Puntos insuficientes: se necesitan {{required}}, disponibles {{current}}"
   }
 }

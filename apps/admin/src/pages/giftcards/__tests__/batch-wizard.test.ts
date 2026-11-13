@@ -1,21 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { z } from "zod";
 
-// Duplicated from batch-wizard.tsx to keep tests isolated
-const wizardSchema = z.object({
-  name: z.string().min(1, "interface.nameIsRequired").max(200),
-  prefix: z
-    .string()
-    .max(8)
-    .regex(/^[A-Z0-9]*$/, "interface.onlyUppercaseLettersAndNumbers")
-    .optional()
-    .or(z.literal("")),
-  quantity: z.coerce.number().int().min(1).max(1_000_000),
-  initialAmount: z.coerce.number().positive("Amount must be greater than 0"),
-  currency: z.string().length(3).default("MXN"),
-  expirationDate: z.date().optional(),
-  termsTemplateId: z.string().min(1, "interface.selectATermsTemplate"),
-});
+import { wizardSchema } from "../../../lib/giftcard-batch-schema";
 
 type WizardData = z.infer<typeof wizardSchema>;
 
@@ -32,6 +18,15 @@ function makeValid(): WizardData {
 }
 
 describe("BatchWizard schema", () => {
+  it("uses the actual page schema's semantic amount validation", () => {
+    const result = wizardSchema.safeParse({ ...makeValid(), initialAmount: 0 });
+    expect(result.success).toBe(false);
+    if (!result.success)
+      expect(result.error.issues.find((issue) => issue.path[0] === "initialAmount")?.message).toBe(
+        "interface.amountMustBeGreaterThan0",
+      );
+  });
+
   it("accepts a valid payload", () => {
     const result = wizardSchema.safeParse(makeValid());
     expect(result.success).toBe(true);

@@ -49,6 +49,11 @@ const families = {
 };
 
 describe("semantic copy and dynamic label coverage", () => {
+  it("keeps missing copy keys literal without traversing prototypes", () => {
+    for (const key of ["missing.key", "__proto__", "constructor", "errors.constructor"])
+      expect(resolveCopy(key, "es-MX")).toBe(key);
+  });
+
   it.each(["es-MX", "en-US"])("covers all audited dynamic families in %s", (locale) => {
     for (const [prefix, values] of Object.entries(families))
       for (const value of values) {

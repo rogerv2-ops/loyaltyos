@@ -28,7 +28,7 @@ import { usePermission } from "@/lib/access";
 import { fetchApi } from "@/lib/api-client";
 import type { Coupon, PaginatedResponse } from "@/types";
 
-import { useUiText } from "../lib/ui-text";
+import { translateLabel,useUiText } from "../lib/ui-text";
 
 const DISCOUNT_LABELS: Record<string, string> = {
   PERCENTAGE: "interface.percentage",
@@ -133,11 +133,11 @@ export function CouponsListPage(): JSX.Element {
                       <TableCell className="font-mono font-medium">{c.code}</TableCell>
                       <TableCell>
                         <Badge variant="secondary">
-                          {uiText(DISCOUNT_LABELS[c.discountType] ?? c.discountType)}
+                          {translateLabel(DISCOUNT_LABELS, c.discountType)}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-sm text-muted-foreground">
-                        {uiText(modeLabels[c.mode] ?? c.mode)}
+                        {translateLabel(modeLabels, c.mode)}
                       </TableCell>
                       <TableCell className="text-sm">
                         {c.usedCount}

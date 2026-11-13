@@ -1,3 +1,4 @@
+import { RewardInsufficientPointsError, RewardTierInsufficientError } from "@loyaltyos/rewards";
 import Fastify from "fastify";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
@@ -54,6 +55,23 @@ describe("localized API copy preserves response contract", () => {
     error.name = name;
     expect(localizedEligibilityReason({ headers: { "accept-language": "es-MX" } }, error)).toBe(
       expected,
+    );
+  });
+
+  it("preserves safe tier and point details in both languages", () => {
+    const tier = new RewardTierInsufficientError('Gold "VIP"', "Silver");
+    const points = new RewardInsufficientPointsError(200, 75);
+    expect(localizedEligibilityReason({ headers: { "accept-language": "en-US" } }, tier)).toBe(
+      tier.message,
+    );
+    expect(localizedEligibilityReason({ headers: { "accept-language": "en-US" } }, points)).toBe(
+      points.message,
+    );
+    expect(localizedEligibilityReason({ headers: { "accept-language": "es-MX" } }, tier)).toBe(
+      'Se requiere el nivel "Gold "VIP"", pero el miembro tiene "Silver"',
+    );
+    expect(localizedEligibilityReason({ headers: { "accept-language": "es-MX" } }, points)).toBe(
+      "Puntos insuficientes: se necesitan 200, disponibles 75",
     );
   });
 

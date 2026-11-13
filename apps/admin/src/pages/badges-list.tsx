@@ -27,7 +27,7 @@ import { usePermission } from "@/lib/access";
 import { fetchApi } from "@/lib/api-client";
 import type { PaginatedResponse } from "@/types";
 
-import { useUiText } from "../lib/ui-text";
+import { translateLabel,useUiText } from "../lib/ui-text";
 
 interface BadgeType {
   id: string;
@@ -73,7 +73,7 @@ export function BadgesListPage(): JSX.Element {
       COLLECTIBLE: "interface.collectible",
       SOCIAL: "interface.social",
     };
-    return uiText(labels[type] ?? type);
+    return translateLabel(labels, type);
   };
 
   return (

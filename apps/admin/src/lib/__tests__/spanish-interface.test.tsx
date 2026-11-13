@@ -7,8 +7,12 @@ import { z } from "zod";
 
 import { Calendar } from "../../components/ui/calendar";
 import i18n from "../../i18n";
+import { RewardsListPage } from "../../pages/rewards/rewards-list";
+
+vi.mock("@/lib/access", () => ({ usePermission: () => false }));
+
 import { CampaignBuilderPage } from "../../pages/campaign-builder";
-import { formatUiDate, translateUi } from "../ui-text";
+import { formatUiDate, translateEnum, translateLabel,translateUi } from "../ui-text";
 
 beforeEach(async () => {
   await i18n.changeLanguage("es-MX");
@@ -20,6 +24,67 @@ afterEach(() => {
 });
 
 describe("Spanish legacy interface coverage", () => {
+  it("leaves arbitrary validation-looking text literal and shows unknown enum values", () => {
+    expect(() => translateUi("@validation:{no-json")).not.toThrow();
+    expect(translateUi("@validation:{no-json")).toBe("@validation:{no-json");
+    expect(translateUi('@validation:{"key":"common.unknown","params":{}}')).toBe(
+      '@validation:{"key":"common.unknown","params":{}}',
+    );
+    for (const value of [
+      "interface.nameIsRequired",
+      "common.unknown",
+      "Premium",
+      "constructor",
+      "__proto__",
+    ])
+      expect(translateLabel({ BUILTIN: "common.unknown" }, value)).toBe(value);
+    expect(translateEnum("FUTURE_TYPE")).toBe("Desconocido (FUTURE_TYPE)");
+  });
+
+  it("renders actual reward categories and names supplied by users literally", async () => {
+    const values = [
+      "interface.nameIsRequired",
+      "common.unknown",
+      "Premium",
+      "@validation:{no-json",
+      "constructor",
+    ];
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            data: {
+              items: values.map((category, i) => ({
+                id: String(i),
+                name: "user-" + category,
+                category,
+                pointsCost: 10,
+                stock: null,
+                isActive: true,
+              })),
+              total: values.length,
+              totalPages: 1,
+            },
+          }),
+        ),
+      ),
+    );
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 } } });
+    render(
+      <QueryClientProvider client={client}>
+        <MemoryRouter>
+          <RewardsListPage />
+        </MemoryRouter>
+      </QueryClientProvider>,
+    );
+    for (const value of values) {
+      expect(await screen.findByText(value)).toBeDefined();
+      expect(screen.getByText("user-" + value)).toBeDefined();
+    }
+    client.clear();
+  });
+
   it("renders calendar navigation and month names in Spanish and English", async () => {
     render(<Calendar month={new Date(2026, 10, 1)} />);
     expect(screen.getByLabelText("Mes siguiente")).toBeDefined();

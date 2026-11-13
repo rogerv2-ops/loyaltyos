@@ -28,7 +28,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { fetchApi } from "@/lib/api-client";
 import type { RuleCondition, RuleGroup, Segment, SegmentMemberCount, SegmentType } from "@/types";
 
-import { useUiText } from "../lib/ui-text";
+import { translateLabel,useUiText } from "../lib/ui-text";
 
 const FIELD_OPTIONS = [
   { value: "email", label: "common.email", operators: ["contains", "eq"] },
@@ -513,7 +513,7 @@ export function SegmentBuilderPage(): JSX.Element {
                             <SelectContent>
                               {operators.map((op) => (
                                 <SelectItem key={op} value={op}>
-                                  {uiText(OPERATOR_LABELS[op] ?? op)}
+                                  {translateLabel(OPERATOR_LABELS, op)}
                                 </SelectItem>
                               ))}
                             </SelectContent>
