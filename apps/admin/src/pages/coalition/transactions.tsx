@@ -1,5 +1,4 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { format } from "date-fns";
 import { AlertTriangle, ArrowLeftRight, RefreshCw, Search, Undo2 } from "lucide-react";
 import { useState } from "react";
 
@@ -32,7 +31,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import uiLocale from "@/i18n";
 import { fetchApi } from "@/lib/api-client";
+import { formatUiDate as format, translateEnum, useUiText } from "@/lib/ui-text";
 
 interface CoalitionTransaction {
   id: string;
@@ -58,6 +59,8 @@ const STATUS_VARIANTS: Record<string, "default" | "secondary" | "destructive" | 
 };
 
 export function CoalitionTransactionsPage(): JSX.Element {
+  const uiText = useUiText();
+
   const queryClient = useQueryClient();
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
   const [memberIdFilter, setMemberIdFilter] = useState("");
@@ -93,7 +96,7 @@ export function CoalitionTransactionsPage(): JSX.Element {
   });
 
   const statusBadge = (status: string) => (
-    <Badge variant={STATUS_VARIANTS[status] ?? "secondary"}>{status}</Badge>
+    <Badge variant={STATUS_VARIANTS[status] ?? "secondary"}>{translateEnum(status)}</Badge>
   );
 
   const handleReverse = (): void => {
@@ -104,9 +107,9 @@ export function CoalitionTransactionsPage(): JSX.Element {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">Coalition Transactions</h1>
+        <h1 className="text-3xl font-bold">{uiText("interface.coalitionTransactions")}</h1>
         <p className="mt-1 text-muted-foreground">
-          View and manage external coalition transactions.
+          {uiText("interface.viewAndManageExternalCoalitionTransactions")}
         </p>
       </div>
 
@@ -114,7 +117,7 @@ export function CoalitionTransactionsPage(): JSX.Element {
       <Card>
         <CardContent className="flex flex-wrap items-end gap-4 pt-6">
           <div className="space-y-2">
-            <Label htmlFor="status-filter">Status</Label>
+            <Label htmlFor="status-filter">{uiText("common.status")}</Label>
             <Select
               value={statusFilter}
               onValueChange={(v) => {
@@ -123,25 +126,25 @@ export function CoalitionTransactionsPage(): JSX.Element {
               }}
             >
               <SelectTrigger id="status-filter" className="w-36">
-                <SelectValue placeholder="All" />
+                <SelectValue placeholder={uiText("interface.all")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="ALL">All</SelectItem>
-                <SelectItem value="PENDING">Pending</SelectItem>
-                <SelectItem value="CONFIRMED">Confirmed</SelectItem>
-                <SelectItem value="FAILED">Failed</SelectItem>
-                <SelectItem value="REVERSED">Reversed</SelectItem>
+                <SelectItem value="ALL">{uiText("interface.all")}</SelectItem>
+                <SelectItem value="PENDING">{uiText("interface.pending")}</SelectItem>
+                <SelectItem value="CONFIRMED">{uiText("interface.confirmed")}</SelectItem>
+                <SelectItem value="FAILED">{uiText("interface.failed")}</SelectItem>
+                <SelectItem value="REVERSED">{uiText("interface.reversed")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="member-filter">Member ID</Label>
+            <Label htmlFor="member-filter">{uiText("interface.memberId")}</Label>
             <div className="flex items-center gap-2">
               <Search className="h-4 w-4 text-muted-foreground" />
               <Input
                 id="member-filter"
-                placeholder="Filter by member..."
+                placeholder={uiText("interface.filterByMember")}
                 value={memberIdFilter}
                 onChange={(e) => {
                   setMemberIdFilter(e.target.value);
@@ -161,7 +164,7 @@ export function CoalitionTransactionsPage(): JSX.Element {
               setPage(1);
             }}
           >
-            Clear Filters
+            {uiText("interface.clearFilters")}
           </Button>
         </CardContent>
       </Card>
@@ -182,13 +185,13 @@ export function CoalitionTransactionsPage(): JSX.Element {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Status</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead>Amount</TableHead>
-                <TableHead>Local Ref</TableHead>
-                <TableHead>External Ref</TableHead>
-                <TableHead>Attempts</TableHead>
-                <TableHead>Date</TableHead>
+                <TableHead>{uiText("common.status")}</TableHead>
+                <TableHead>{uiText("interface.type")}</TableHead>
+                <TableHead>{uiText("interface.amount")}</TableHead>
+                <TableHead>{uiText("interface.localRef")}</TableHead>
+                <TableHead>{uiText("interface.externalRef")}</TableHead>
+                <TableHead>{uiText("interface.attempts")}</TableHead>
+                <TableHead>{uiText("common.date")}</TableHead>
                 <TableHead />
               </TableRow>
             </TableHeader>
@@ -203,9 +206,11 @@ export function CoalitionTransactionsPage(): JSX.Element {
                 >
                   <TableCell>{statusBadge(tx.status)}</TableCell>
                   <TableCell>
-                    <Badge variant="outline">{tx.type}</Badge>
+                    <Badge variant="outline">{translateEnum(tx.type)}</Badge>
                   </TableCell>
-                  <TableCell className="font-mono">{tx.amount.toLocaleString()}</TableCell>
+                  <TableCell className="font-mono">
+                    {tx.amount.toLocaleString(uiLocale.language)}
+                  </TableCell>
                   <TableCell className="font-mono text-xs">{tx.localTxRef}</TableCell>
                   <TableCell className="font-mono text-xs">{tx.externalTxRef ?? "—"}</TableCell>
                   <TableCell>{tx.attempts}</TableCell>
@@ -224,7 +229,7 @@ export function CoalitionTransactionsPage(): JSX.Element {
                         }}
                       >
                         <Undo2 className="mr-1 h-3 w-3" />
-                        Reverse
+                        {uiText("interface.reverse")}
                       </Button>
                     )}
                   </TableCell>
@@ -236,7 +241,7 @@ export function CoalitionTransactionsPage(): JSX.Element {
       ) : (
         <Card>
           <CardContent className="py-8 text-center">
-            <p className="text-muted-foreground">No transactions found.</p>
+            <p className="text-muted-foreground">{uiText("interface.noTransactionsFound")}</p>
           </CardContent>
         </Card>
       )}
@@ -251,9 +256,11 @@ export function CoalitionTransactionsPage(): JSX.Element {
             setPage(page - 1);
           }}
         >
-          Previous
+          {uiText("common.previous")}
         </Button>
-        <span className="text-sm text-muted-foreground">Page {page}</span>
+        <span className="text-sm text-muted-foreground">
+          {uiText("interface.page")} {page}
+        </span>
         <Button
           variant="outline"
           size="sm"
@@ -262,7 +269,7 @@ export function CoalitionTransactionsPage(): JSX.Element {
             setPage(page + 1);
           }}
         >
-          Next
+          {uiText("common.next")}
         </Button>
       </div>
 
@@ -271,7 +278,7 @@ export function CoalitionTransactionsPage(): JSX.Element {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              Transaction Detail
+              {uiText("interface.transactionDetail")}
               {statusBadge(selectedTx.status)}
             </CardTitle>
             <CardDescription>{selectedTx.localTxRef}</CardDescription>
@@ -283,42 +290,58 @@ export function CoalitionTransactionsPage(): JSX.Element {
                 <p className="font-mono text-sm">{selectedTx.id}</p>
               </div>
               <div>
-                <Label className="text-xs text-muted-foreground">Type</Label>
-                <p>{selectedTx.type}</p>
+                <Label className="text-xs text-muted-foreground">{uiText("interface.type")}</Label>
+                <p>{translateEnum(selectedTx.type)}</p>
               </div>
               <div>
-                <Label className="text-xs text-muted-foreground">Amount</Label>
-                <p className="font-mono">{selectedTx.amount.toLocaleString()}</p>
+                <Label className="text-xs text-muted-foreground">
+                  {uiText("interface.amount")}
+                </Label>
+                <p className="font-mono">{selectedTx.amount.toLocaleString(uiLocale.language)}</p>
               </div>
               <div>
-                <Label className="text-xs text-muted-foreground">Attempts</Label>
+                <Label className="text-xs text-muted-foreground">
+                  {uiText("interface.attempts")}
+                </Label>
                 <p>{selectedTx.attempts}</p>
               </div>
               <div>
-                <Label className="text-xs text-muted-foreground">External Tx Ref</Label>
+                <Label className="text-xs text-muted-foreground">
+                  {uiText("interface.externalTxRef")}
+                </Label>
                 <p className="font-mono text-sm">{selectedTx.externalTxRef ?? "—"}</p>
               </div>
               <div>
-                <Label className="text-xs text-muted-foreground">Idempotency Key</Label>
+                <Label className="text-xs text-muted-foreground">
+                  {uiText("interface.idempotencyKey")}
+                </Label>
                 <p className="font-mono text-sm">{selectedTx.idempotencyKey}</p>
               </div>
               <div className="sm:col-span-2">
-                <Label className="text-xs text-muted-foreground">Created At</Label>
+                <Label className="text-xs text-muted-foreground">
+                  {uiText("interface.createdAt")}
+                </Label>
                 <p className="text-sm">{format(new Date(selectedTx.createdAt), "PPpp")}</p>
               </div>
               <div className="sm:col-span-2">
-                <Label className="text-xs text-muted-foreground">Updated At</Label>
+                <Label className="text-xs text-muted-foreground">
+                  {uiText("interface.updatedAt")}
+                </Label>
                 <p className="text-sm">{format(new Date(selectedTx.updatedAt), "PPpp")}</p>
               </div>
               {selectedTx.lastError && (
                 <div className="sm:col-span-2">
-                  <Label className="text-xs text-destructive">Last Error</Label>
+                  <Label className="text-xs text-destructive">
+                    {uiText("interface.lastError")}
+                  </Label>
                   <p className="text-sm text-destructive">{selectedTx.lastError}</p>
                 </div>
               )}
               {selectedTx.metadata != null && (
                 <div className="sm:col-span-2">
-                  <Label className="text-xs text-muted-foreground">Metadata</Label>
+                  <Label className="text-xs text-muted-foreground">
+                    {uiText("interface.metadata")}
+                  </Label>
                   <pre className="mt-1 max-h-32 overflow-auto rounded bg-muted p-2 text-xs">
                     {JSON.stringify(selectedTx.metadata as Record<string, unknown>, null, 2)}
                   </pre>
@@ -328,14 +351,16 @@ export function CoalitionTransactionsPage(): JSX.Element {
 
             {/* Timeline */}
             <div className="mt-6">
-              <Label className="text-xs text-muted-foreground">Timeline</Label>
+              <Label className="text-xs text-muted-foreground">
+                {uiText("interface.timeline")}
+              </Label>
               <div className="mt-2 space-y-2">
                 <div className="flex items-center gap-3">
                   <div className="flex h-6 w-6 items-center justify-center rounded-full bg-secondary text-xs">
                     1
                   </div>
                   <div>
-                    <p className="text-sm font-medium">PENDING</p>
+                    <p className="text-sm font-medium">{uiText("interface.pending2")}</p>
                     <p className="text-xs text-muted-foreground">
                       {format(new Date(selectedTx.createdAt), "PPpp")}
                     </p>
@@ -348,7 +373,7 @@ export function CoalitionTransactionsPage(): JSX.Element {
                       2
                     </div>
                     <div>
-                      <p className="text-sm font-medium">CONFIRMED</p>
+                      <p className="text-sm font-medium">{uiText("interface.confirmed2")}</p>
                       <p className="text-xs text-muted-foreground">
                         {format(new Date(selectedTx.updatedAt), "PPpp")}
                       </p>
@@ -362,7 +387,7 @@ export function CoalitionTransactionsPage(): JSX.Element {
                       <AlertTriangle className="h-3 w-3" />
                     </div>
                     <div>
-                      <p className="text-sm font-medium">FAILED</p>
+                      <p className="text-sm font-medium">{uiText("interface.failed2")}</p>
                       <p className="text-xs text-muted-foreground">{selectedTx.lastError}</p>
                     </div>
                   </div>
@@ -374,7 +399,7 @@ export function CoalitionTransactionsPage(): JSX.Element {
                       <ArrowLeftRight className="h-3 w-3" />
                     </div>
                     <div>
-                      <p className="text-sm font-medium">REVERSED</p>
+                      <p className="text-sm font-medium">{uiText("interface.reversed2")}</p>
                       <p className="text-xs text-muted-foreground">
                         {format(new Date(selectedTx.updatedAt), "PPpp")}
                       </p>
@@ -395,7 +420,7 @@ export function CoalitionTransactionsPage(): JSX.Element {
                   }}
                 >
                   <Undo2 className="mr-2 h-4 w-4" />
-                  Force Reverse
+                  {uiText("interface.forceReverse")}
                 </Button>
               </div>
             )}
@@ -407,22 +432,23 @@ export function CoalitionTransactionsPage(): JSX.Element {
       <Dialog open={reverseDialogOpen} onOpenChange={setReverseDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Reverse Transaction</DialogTitle>
+            <DialogTitle>{uiText("interface.reverseTransaction")}</DialogTitle>
             <DialogDescription>
-              This will attempt to reverse the external coalition transaction. This action cannot be
-              undone.
+              {uiText(
+                "interface.thisWillAttemptToReverseTheExternalCoalitionTransactionThisActionCannot",
+              )}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <Label htmlFor="reverse-reason">Reason</Label>
+              <Label htmlFor="reverse-reason">{uiText("interface.reason")}</Label>
               <Input
                 id="reverse-reason"
                 value={reverseReason}
                 onChange={(e) => {
                   setReverseReason(e.target.value);
                 }}
-                placeholder="e.g., Customer refund, system error"
+                placeholder={uiText("interface.eGCustomerRefundSystemError")}
               />
             </div>
           </div>
@@ -433,7 +459,7 @@ export function CoalitionTransactionsPage(): JSX.Element {
                 setReverseDialogOpen(false);
               }}
             >
-              Cancel
+              {uiText("common.cancel")}
             </Button>
             <Button
               variant="destructive"
@@ -443,14 +469,14 @@ export function CoalitionTransactionsPage(): JSX.Element {
               {reverseMutation.isPending ? (
                 <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
               ) : null}
-              Confirm Reverse
+              {uiText("interface.confirmReverse")}
             </Button>
           </DialogFooter>
           {reverseMutation.isError && (
             <p className="text-sm text-destructive">
               {reverseMutation.error instanceof Error
                 ? reverseMutation.error.message
-                : "Reverse failed"}
+                : uiText("interface.reverseFailed")}
             </p>
           )}
         </DialogContent>
