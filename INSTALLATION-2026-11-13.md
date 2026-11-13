@@ -1,6 +1,44 @@
 # Registro de instalación y verificación - 2026-11-13
 
-## Versión instalada
+## Versión instalada actual: traducciones aprobadas (09:45)
+
+- Commit de aplicación instalado: `ba57c3982bc6ee08af59723f97260daacafec30b`.
+- Cambio revisado e integrado: [PR 3](https://github.com/rogerv2-ops/loyaltyos/pull/3).
+- Árbol de aplicación: `3ebbade44fd867e3ab0f4efc0f37f0240afd4a9b`, igual al candidato revisado `1e736d466bae18001b190f3c40f1b033ab0613c6`.
+- Despliegue manual en la misma aplicación Coolify: iniciado a las 09:37:31 y terminado a las 09:45:14 del 13 de noviembre de 2026, America/Lima. El registro de importación identifica el SHA completo.
+- Este registro documental es posterior al despliegue. Su commit NO está instalado y no requiere reinstalación.
+
+### Alcance y comprobaciones previas
+
+Traducciones de textos propios de administración y portal: botones, formularios, mensajes de validación/error, fechas y calendario. No cambia reglas comerciales, saldos, nombres o datos del negocio, marca ni prioridad o preferencias de idioma.
+
+- Pruebas locales finales: 1500 aprobadas en 70 archivos; typecheck y build de los 19 paquetes y lint completo aprobados.
+- Paridad de catálogos: 921 claves por idioma; control de interfaz aprobado con 34 excepciones documentadas.
+- CI del candidato revisado y, por separado, del SHA integrado: siete comprobaciones aprobadas en cada uno (PostgreSQL 14/15/16, build, typecheck/lint, MCP y smoke).
+- CI del SHA instalado: [ejecución 1](https://github.com/rogerv2-ops/loyaltyos/actions/runs/43442456272), [ejecución 2](https://github.com/rogerv2-ops/loyaltyos/actions/runs/43442456318), [ejecución 3](https://github.com/rogerv2-ops/loyaltyos/actions/runs/43442456228).
+
+### Verificación real posterior al despliegue
+
+- Administración: sesión existente válida, misma identidad/rol/programa y preferencia `es-MX`; dashboard Resumen visible y diálogo Crear token de API en español. Solo se abrió el diálogo: no se creó otro token.
+- Los contadores comprobados se conservaron: un miembro activo, cero puntos emitidos/canjeados, cero tarjetas activas y un token existente.
+- Portal público: Inicio, Perfil, acceso por correo y preferencias se muestran en español al elegirlo en una sesión temporal no autenticada, descartada al terminar. No se envió correo, no se solicitó enlace y no se cambió la preferencia persistente de una cuenta.
+- Límite: no había sesión de cliente activa en esta verificación. Las pantallas autenticadas del portal NO se verificaron después de este despliegue. El acceso de cliente descrito más abajo corresponde al despliegue anterior, no constituye esta prueba.
+- Los bundles servidos cambiaron a `index-DgEHOATX.js` (admin) e `index-BEebEwbe.js` (portal).
+- Coolify informó `running:healthy`; la comprobación de disponibilidad devolvió HTTP 200, base de datos y Redis listos.
+- Se mantuvieron la misma configuración compose, dominios, rama/repositorio, comandos y volúmenes existentes. Sin seed, reset ni cambio de esquema; sin configuración comercial adicional.
+
+### Estado operativo y pendientes de este despliegue
+
+- No se crearon manualmente otra aplicación, red ni volumen. Coolify sustituyó los contenedores del mismo recurso; el registro indica retirada de contenedores anteriores e inicio de los nuevos.
+- No se ejecutó una limpieza manual del VPS. No se afirma ausencia de imágenes antiguas o cachés: la conciliación queda en la revisión habitual de residuos y cualquier eliminación requiere el permiso aplicable.
+- Intervención del instalador liberada a las 09:49:44, America/Lima. No queda vigilancia periódica de este despliegue.
+- Copia temporal local de la credencial de despliegue eliminada; credencial guardada original conservada. Pruebas locales detenidas; worktrees, logs y capturas de revisión conservados fuera del VPS para trazabilidad.
+- La publicación de imágenes Docker continúa desactivada. No se publicaron imágenes ni se contrató un servicio de pago.
+- Fuera del alcance de traducciones: fallo del editor de premios, experiencia de validación de tokens, 404 al entrar directamente en rutas de administración y recorte del menú lateral móvil. No se presentan como reparados.
+
+El historial siguiente conserva las comprobaciones de la instalación anterior y sus límites. No sustituye el estado actual indicado arriba.
+
+## Despliegue anterior: corrección del dashboard (07:33)
 
 - Commit de aplicación instalado: `9d95366f1db5800ba09c932b7df7f2159576ca53`.
 - Corrección: [PR 1](https://github.com/rogerv2-ops/loyaltyos/pull/1), revisada e integrada en `main`.
