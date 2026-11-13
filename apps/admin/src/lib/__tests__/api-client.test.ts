@@ -2,6 +2,7 @@
 
 import { afterEach, describe, expect, it, vi } from "vitest";
 
+import i18n from "../../i18n";
 import { fetchApi, setOnUnauthorized } from "../api-client";
 
 function jsonResponse(body: unknown, status: number): Response {
@@ -21,12 +22,14 @@ describe("fetchApi", () => {
     const mockFetch = vi.fn().mockResolvedValue(jsonResponse({ data: { ok: true } }, 200));
     vi.stubGlobal("fetch", mockFetch);
 
+    await i18n.changeLanguage("es-MX");
     await fetchApi<{ ok: boolean }>("/admin/campaigns");
 
     const [url, init] = mockFetch.mock.calls[0] as [string, RequestInit];
     expect(url).toBe("/api/v1/admin/campaigns");
     expect(init.credentials).toBe("include");
     const headers = init.headers as Record<string, string>;
+    expect(headers["Accept-Language"]).toBe("es-MX");
     expect(headers).not.toHaveProperty("X-API-Key");
     expect(headers).not.toHaveProperty("X-Program-Id");
   });
